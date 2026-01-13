@@ -21,15 +21,17 @@ public:
                          const bool gpu_enabled = false) {
     DualMemory<T> dual_array;
 
-    dual_array.host_ptr = (T *)malloc(num_elements * sizeof(T));
+    dual_array.host_ptr = (T *)std::malloc(num_elements * sizeof(T));
 
     if (gpu_enabled) {
       dual_array.dev_ptr = (T *)acc_malloc(num_elements * sizeof(T));
 
       if (dual_array.dev_ptr == nullptr) {
-        std::cerr << "DualMemoryManager error: failed to allocate device memory."
-                  << std::endl;
-        exit(1);
+        std::cerr
+            << "DualMemoryManager error: failed to allocate device memory."
+            << std::endl;
+        std::free(dual_array.host_ptr);
+        std::exit(1);
       }
     } else {
       dual_array.dev_ptr = nullptr;
@@ -37,11 +39,15 @@ public:
 
     dual_array.num_elements = num_elements;
     dual_array.size = num_elements * sizeof(T);
+
+    return dual_array;
   }
 
-  template <typename T> void free(DualMemory<T> dual_array) {
-    free(dual_array.host_ptr);
-    dual_array.host_ptr = nullptr;
+  template <typename T> void free(DualMemory<T> &dual_array) {
+    if (dual_array.dev_ptr != nullptr) {
+      std::free(dual_array.host_ptr);
+      dual_array.host_ptr = nullptr;
+    }
 
     if (dual_array.dev_ptr != nullptr) {
       acc_free(dual_array.dev_ptr);
