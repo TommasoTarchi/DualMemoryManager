@@ -1,12 +1,16 @@
-#include <iostream>
+#pragma once
+
+#include "../private/abort_manager.hpp"
+#include "../private/memory_tracker.hpp"
 #include <openacc.h>
 
 namespace DualMemoryManager {
 
 // TODO: add description and comments
-template <typename T> struct DualMemory {
+template <typename T> struct DualArray {
   T *host_ptr;
   T *dev_ptr;
+  std::string label;
   size_t num_elements;
   size_t size;
 };
@@ -16,16 +20,23 @@ template <typename T> struct DualMemory {
 //       allocation call
 class DualMemoryManager {
 private:
-  size_t total_host_memory;  /*!< total used memory on host */
-  size_t total_device_memory;  /*!< total used memory on device */
+  size_t total_host_memory;   /*!< total used memory on host */
+  size_t total_device_memory; /*!< total used memory on device */
+  std::map<std::string, size_t> host_memory_tracker;   /*!< host memory
+                                                        tracker for reports */
+  std::map<std::string, size_t> device_memory_tracker; /*!< device memory
+                                                         tracker for reports */
 
 public:
-  DualMemoryManager(void) : total_host_memory(0), total_device_memory(0) {}
+  DualMemoryManager(void)
+      : total_host_memory(0), total_device_memory(0), host_memory_tracker({}),
+        device_memory_tracker({}) {}
 
+  // TODO: add description
   template <typename T>
-  DualMemory<T> allocate(const std::string label, const size_t num_elements,
-                         const bool on_device = false) {
-    DualMemory<T> dual_array;
+  DualArray<T> allocate(const std::string label, const size_t num_elements,
+                        const bool on_device = false) {
+    DualArray<T> dual_array;
 
     /* allocate memory on host */
     dual_array.host_ptr = (T *)std::malloc(num_elements * sizeof(T));
@@ -35,15 +46,16 @@ public:
       dual_array.dev_ptr = (T *)acc_malloc(num_elements * sizeof(T));
 
       if (dual_array.dev_ptr == nullptr) {
-        std::cerr
-            << "DualMemoryManager error: failed to allocate device memory."
-            << std::endl;
         std::free(dual_array.host_ptr);
-        std::exit(1);
+        dual_array.host_ptr = nullptr;
+        abort_manager("Failed to allocate device memory.");
       }
     } else {
       dual_array.dev_ptr = nullptr;
     }
+
+    /* update array label */
+    dual_array.label = label;
 
     /* update number of elements and bytes */
     dual_array.num_elements = num_elements;
@@ -51,27 +63,61 @@ public:
 
     /* update used memory */
     total_host_memory += dual_array.size;
-    if (on_device)
+    const bool ret_host =
+        add_to_memory_tracker(host_memory_tracker, label, dual_array.size);
+
+    bool ret_device;
+    if (on_device) {
       total_device_memory += dual_array.size;
+      ret_device =
+          add_to_memory_tracker(device_memory_tracker, label, dual_array.size);
+    }
+
+    if (ret_host || ret_device)
+      abort_manager(label + " already exists. Please choose another label.");
 
     return dual_array;
   }
 
-  template <typename T> void free(DualMemory<T> &dual_array) {
-    /* free memory on host */
-    if (dual_array.host_ptr != nullptr) {
-      std::free(dual_array.host_ptr);
-      dual_array.host_ptr = nullptr;
-      total_host_memory -= dual_array.size;
+  // TODO: add description (specify when the method aborts)
+  template <typename T> void free(DualArray<T> &dual_array) {
+    /* check that host pointer is not null */
+    if (dual_array.host_ptr == nullptr) {
+      abort_manager(dual_array.label + "'s host pointer is a null pointer.");
     }
 
-    /* free memory on device (if present) */
+    /* update host memory usage */
+    bool ret =
+        remove_from_memory_tracker(host_memory_tracker, dual_array.label);
+    if (ret) {
+      abort_manager(dual_array.label +
+                    " was not found by memory manager on host.");
+    }
+    total_host_memory -= dual_array.size;
+
+    /* free memory on host */
+    std::free(dual_array.host_ptr);
+    dual_array.host_ptr = nullptr;
+
     if (dual_array.dev_ptr != nullptr) {
+      /* free memory on device */
       acc_free(dual_array.dev_ptr);
       dual_array.dev_ptr = nullptr;
+
+      /* update device memory usage*/
+      ret = remove_from_memory_tracker(device_memory_tracker, dual_array.label);
+      if (ret) {
+        abort_manager(dual_array.label +
+                      " was not found by memory manager on device, but the "
+                      "corresponding device pointer is not a null pointer.");
+      }
       total_device_memory -= dual_array.size;
     }
   }
+
+  // TODO: report memory usage
+
+  // TODO: maybe the destructor is needed?
 };
 
 } // namespace DualMemoryManager
