@@ -17,7 +17,7 @@ void DualMemoryManager::report_memory_usage() {
   /* set width of columns */
   size_t label_col_width = label_header.length();
 
-  for (const auto &[label, size] : host_memory_tracker)
+  for (const auto &[label, element] : memory_tracker)
     label_col_width = std::max(label_col_width, label.length());
 
   label_col_width += 4;
@@ -38,25 +38,20 @@ void DualMemoryManager::report_memory_usage() {
   /* print header */
   std::cout << "\n" << big_separator;
   std::cout << "DualMemoryManager Report:\n";
-  std::cout << small_separator;
+  std::cout << big_separator;
   std::cout << std::left << std::setw(label_col_width) << label_header
             << std::setw(size_col_width) << size_header
             << std::setw(on_device_col_width) << on_device_header << "\n";
   std::cout << small_separator;
 
-  /* print table content */
-  for (const auto &[label, size] : host_memory_tracker) {
-    /* check if the array is present on device as well */
-    const auto it = device_memory_tracker.find(label);
-    const std::string on_device =
-        it == device_memory_tracker.end() ? "no" : "yes";
-
-    /* print data */
+  /* print tracker's content */
+  for (const auto &[label, element] : memory_tracker) {
+    const std::string on_device = element.second ? "yes" : "no";
     std::cout << std::left << std::setw(label_col_width) << label
-              << std::setw(size_col_width) << size
+              << std::setw(size_col_width) << element.first
               << std::setw(on_device_col_width) << on_device << "\n";
   }
-  std::cout << small_separator;
+  std::cout << big_separator;
 
   /* print total memory usage */
   std::cout << "Total host memory used: " << total_host_memory << " bytes"

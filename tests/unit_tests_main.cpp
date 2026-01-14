@@ -9,8 +9,8 @@
 
 // TODO: add description
 struct test_struct {
-  int first_field;
-  float second_field;
+  float first_field;
+  int second_field;
 };
 
 // TODO: add description
@@ -29,6 +29,9 @@ TEST_CASE("Base types - No device", "[dual_memory_manager]") {
   dual_memory_manager.report_memory_usage();
 
   dual_memory_manager.free<int>(first_test_array);
+
+  dual_memory_manager.report_memory_usage();
+
   dual_memory_manager.free<float>(second_test_array);
 
   dual_memory_manager.report_memory_usage();

@@ -30,15 +30,12 @@ class DualMemoryManager {
 private:
   size_t total_host_memory;   /*!< total used memory on host */
   size_t total_device_memory; /*!< total used memory on device */
-  std::map<std::string, size_t> host_memory_tracker;   /*!< host memory
-                                                        tracker for reports */
-  std::map<std::string, size_t> device_memory_tracker; /*!< device memory
-                                                         tracker for reports */
+  std::map<std::string, std::pair<size_t, bool>>
+      memory_tracker; /*!< host memory tracker for reports */
 
 public:
   DualMemoryManager()
-      : total_host_memory(0), total_device_memory(0), host_memory_tracker({}),
-        device_memory_tracker({}) {}
+      : total_host_memory(0), total_device_memory(0), memory_tracker({}) {}
 
   // TODO: add description
   template <typename T>
@@ -46,13 +43,18 @@ public:
                         const bool on_device = false) {
     DualArray<T> dual_array;
 
+    /* check that device has not been required if openACC is not enabled */
+    // TODO
+
     /* allocate memory on host */
     dual_array.host_ptr = (T *)std::malloc(num_elements * sizeof(T));
 
-#ifdef _OPENACC
     /* if required, allocate memory on device */
     if (on_device) {
+
+#ifdef _OPENACC
       dual_array.dev_ptr = (T *)acc_malloc(num_elements * sizeof(T));
+#endif // _OPENACC
 
       if (dual_array.dev_ptr == nullptr) {
         std::free(dual_array.host_ptr);
@@ -62,9 +64,6 @@ public:
     } else {
       dual_array.dev_ptr = nullptr;
     }
-#else
-    dual_array.dev_ptr = nullptr;
-#endif // _OPENACC
 
     /* update array label */
     dual_array.label = label;
@@ -73,21 +72,15 @@ public:
     dual_array.num_elements = num_elements;
     dual_array.size = num_elements * sizeof(T);
 
-    /* update used memory */
+    /* update used memory and memory tracker */
     total_host_memory += dual_array.size;
-    const bool ret_host =
-        add_to_memory_tracker(host_memory_tracker, label, dual_array.size);
-
-    bool ret_device = false;
-#ifdef _OPENACC
-    if (on_device) {
+    if (on_device)
       total_device_memory += dual_array.size;
-      ret_device =
-          add_to_memory_tracker(device_memory_tracker, label, dual_array.size);
-    }
-#endif // _OPENACC
 
-    if (ret_host || ret_device)
+    const bool ret = add_to_memory_tracker(memory_tracker, label,
+                                           dual_array.size, on_device);
+
+    if (ret)
       abort_manager(label + " already exists. Please choose another label.");
 
     return dual_array;
@@ -100,35 +93,27 @@ public:
       abort_manager(dual_array.label + "'s host pointer is a null pointer.");
     }
 
-    /* update host memory usage */
-    bool ret =
-        remove_from_memory_tracker(host_memory_tracker, dual_array.label);
+    /* check that array was actually recorded and update memory
+     * tracker
+     * */
+    bool ret = remove_from_memory_tracker(memory_tracker, dual_array.label);
     if (ret) {
-      abort_manager(dual_array.label +
-                    " was not found by memory manager on host.");
+      abort_manager(dual_array.label + " was not found by memory manager.");
     }
-    total_host_memory -= dual_array.size;
 
     /* free memory on host */
     std::free(dual_array.host_ptr);
     dual_array.host_ptr = nullptr;
+    total_host_memory -= dual_array.size;
 
-#ifdef _OPENACC
+    /* free memory on device */
     if (dual_array.dev_ptr != nullptr) {
-      /* free memory on device */
+#ifdef _OPENACC
       acc_free(dual_array.dev_ptr);
+#endif // _OPENACC
       dual_array.dev_ptr = nullptr;
-
-      /* update device memory usage*/
-      ret = remove_from_memory_tracker(device_memory_tracker, dual_array.label);
-      if (ret) {
-        abort_manager(dual_array.label +
-                      " was not found by memory manager on device, but the "
-                      "corresponding device pointer is not a null pointer.");
-      }
       total_device_memory -= dual_array.size;
     }
-#endif // _OPENACC
   }
 
   // TODO: add description
