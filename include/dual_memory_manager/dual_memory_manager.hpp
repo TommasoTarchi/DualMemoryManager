@@ -44,7 +44,11 @@ public:
     DualArray<T> dual_array;
 
     /* check that device has not been required if openACC is not enabled */
-    // TODO
+#ifndef _OPENACC
+    if (on_device)
+      abort_manager(label + " was requested to be allocated on device as well, "
+                            "but openACC is not enabled.");
+#endif // _OPENACC
 
     /* allocate memory on host */
     dual_array.host_ptr = (T *)std::malloc(num_elements * sizeof(T));
@@ -61,6 +65,7 @@ public:
         dual_array.host_ptr = nullptr;
         abort_manager("Failed to allocate device memory.");
       }
+
     } else {
       dual_array.dev_ptr = nullptr;
     }
