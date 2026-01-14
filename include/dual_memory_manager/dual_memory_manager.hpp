@@ -36,13 +36,13 @@ private:
                                                          tracker for reports */
 
 public:
-  DualMemoryManager(void)
+  DualMemoryManager()
       : total_host_memory(0), total_device_memory(0), host_memory_tracker({}),
         device_memory_tracker({}) {}
 
   // TODO: add description
   template <typename T>
-  DualArray<T> allocate(const std::string label, const size_t num_elements,
+  DualArray<T> allocate(std::string &label, const size_t num_elements,
                         const bool on_device = false) {
     DualArray<T> dual_array;
 
@@ -132,7 +132,7 @@ public:
   }
 
   // TODO: add description
-  void report_memory_usage(void);
+  void report_memory_usage();
 
   // TODO: maybe the destructor is needed?
 };

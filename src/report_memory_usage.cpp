@@ -7,7 +7,7 @@
 namespace DualMemoryManager {
 
 // TODO: add description
-void DualMemoryManager::report_memory_usage(void) {
+void DualMemoryManager::report_memory_usage() {
 
   /* define header */
   const std::string label_header = "Array Label";
