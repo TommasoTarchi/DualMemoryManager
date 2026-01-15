@@ -6,7 +6,7 @@
 
 #include "../include/private/memory_tracker.hpp"
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Adds an entry to the given memory tracker.
@@ -68,4 +68,4 @@ bool remove_from_memory_tracker(
   return out;
 }
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

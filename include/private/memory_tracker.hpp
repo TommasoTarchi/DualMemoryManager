@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Adds an entry to the given memory tracker.
@@ -50,4 +50,4 @@ bool add_to_memory_tracker(std::map<std::string, std::pair<size_t, bool>> &,
 bool remove_from_memory_tracker(
     std::map<std::string, std::pair<size_t, bool>> &, const std::string);
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Aborts manager displaying an error message.
@@ -21,4 +21,4 @@ namespace DualMemoryManager {
  */
 void abort_manager(const std::string);
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

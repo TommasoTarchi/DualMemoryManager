@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Allocates dual array memory.
@@ -80,4 +80,4 @@ DualArray<T> DualMemoryManager::allocate(const std::string label,
   return dual_array;
 }
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

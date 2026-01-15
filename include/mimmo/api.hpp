@@ -1,5 +1,5 @@
 /**
- * @file dual_memory_manager.cpp
+ * @file api.cpp
  *
  * @brief Main library header with memory manager class definition.
  */
@@ -12,7 +12,7 @@
 #include <openacc.h>
 #endif // _OPENACC
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Stores dual array data.
@@ -110,7 +110,7 @@ public:
   // TODO: maybe the destructor is needed?
 };
 
-} // namespace DualMemoryManager
+} // namespace MiMMO
 
 /* include of templated methods definitions */
 #include "../private/allocate.inl"

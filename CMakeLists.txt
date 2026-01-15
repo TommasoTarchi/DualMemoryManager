@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(DualMemoryManager VERSION 1.0.0 LANGUAGES CXX)
+project(MiMMO VERSION 1.0.0 LANGUAGES CXX)
 
 # require minimum c++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -9,20 +9,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ### compile library ###
 
 # define shared library
-add_library(DualMemoryManager SHARED
+add_library(MiMMO SHARED
     src/abort_manager.cpp
     src/memory_tracker.cpp
     src/report_memory_usage.cpp
 )
 
 # include directories
-target_include_directories(DualMemoryManager PUBLIC 
+target_include_directories(MiMMO PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # set output library name
-set_target_properties(DualMemoryManager PROPERTIES OUTPUT_NAME "dual_memory_manager")
+set_target_properties(MiMMO PROPERTIES OUTPUT_NAME "mimmo")
 
 
 ### unit tests ###
@@ -31,7 +31,6 @@ set_target_properties(DualMemoryManager PROPERTIES OUTPUT_NAME "dual_memory_mana
 option(UNIT_TESTS "Enable unit testing" ON)
 
 if(UNIT_TESTS)
-
     # download and include Catch2
     include(FetchContent)
 
@@ -51,7 +50,7 @@ if(UNIT_TESTS)
 
     # link library and Catch2 to executable
     target_link_libraries(unit_tests.x PRIVATE 
-        DualMemoryManager
+        MiMMO
         Catch2::Catch2WithMain
     )
 
@@ -59,7 +58,6 @@ if(UNIT_TESTS)
     include(Catch)
 
     catch_discover_tests(unit_tests.x)
-
 endif()
 
 
@@ -69,7 +67,6 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-
     # set input and output files
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
@@ -84,9 +81,6 @@ if(DOXYGEN_FOUND)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
-
 else()
-
     message(WARNING "Doxygen not found, documentation will not be generated")
-
 endif()

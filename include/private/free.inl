@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Frees memory allocated for a given dual array.
@@ -50,4 +50,4 @@ template <typename T> void DualMemoryManager::free(DualArray<T> &dual_array) {
   }
 }
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

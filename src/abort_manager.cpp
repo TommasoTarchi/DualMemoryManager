@@ -7,7 +7,7 @@
 #include "../include/private/abort_manager.hpp"
 #include <iostream>
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 // TODO: maybe add MPI
 /**
@@ -33,4 +33,4 @@ void abort_manager(const std::string message) {
   return;
 }
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

@@ -1,10 +1,10 @@
 /**
  * @file unit_tests_main.cpp
  *
- * @brief Unit tests for the DualMemoryManager library, using Catch2.
+ * @brief Unit tests for the MiMMO library, using Catch2.
  */
 
-#include "../include/dual_memory_manager/api.hpp"
+#include "../include/mimmo/api.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 /**
@@ -20,15 +20,14 @@ struct test_struct {
  * support.
  */
 TEST_CASE("Base types - No device", "[dual_memory_manager]") {
-  DualMemoryManager::DualMemoryManager dual_memory_manager =
-      DualMemoryManager::DualMemoryManager();
+  MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
 
-  DualMemoryManager::DualArray<int> first_test_array =
+  MiMMO::DualArray<int> first_test_array =
       dual_memory_manager.allocate<int>("first_test_array", 10, false);
 
   dual_memory_manager.report_memory_usage();
 
-  DualMemoryManager::DualArray<float> second_test_array =
+  MiMMO::DualArray<float> second_test_array =
       dual_memory_manager.allocate<float>("second_test_array", 20, false);
 
   dual_memory_manager.report_memory_usage();
@@ -48,10 +47,9 @@ TEST_CASE("Base types - No device", "[dual_memory_manager]") {
  * @brief Test using test struct without GPU support.
  */
 TEST_CASE("Struct - No device", "[dual_memory_manager]") {
-  DualMemoryManager::DualMemoryManager dual_memory_manager =
-      DualMemoryManager::DualMemoryManager();
+  MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
 
-  DualMemoryManager::DualArray<test_struct> test_array =
+  MiMMO::DualArray<test_struct> test_array =
       dual_memory_manager.allocate<test_struct>("test_array", 10, false);
 
   dual_memory_manager.report_memory_usage();

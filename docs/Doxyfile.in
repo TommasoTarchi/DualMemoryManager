@@ -1,4 +1,4 @@
-PROJECT_NAME           = "DualMemoryManager"
+PROJECT_NAME           = "MiMMO (Minimal Memory Manager for Openacc)"
 PROJECT_BRIEF          = ""
 OUTPUT_DIRECTORY       = "@CMAKE_CURRENT_BINARY_DIR@/docs"
 INPUT                  = "@CMAKE_SOURCE_DIR@/include" "@CMAKE_SOURCE_DIR@/README.md"

@@ -5,11 +5,11 @@
  * (memory tracker, total memory, ...).
  */
 
-#include "../include/dual_memory_manager/api.hpp"
+#include "../include/mimmo/api.hpp"
 #include <iomanip>
 #include <iostream>
 
-namespace DualMemoryManager {
+namespace MiMMO {
 
 /**
  * @brief Reports memory used by the memory manager.
@@ -77,4 +77,4 @@ void DualMemoryManager::report_memory_usage() {
   return;
 }
 
-} // namespace DualMemoryManager
+} // namespace MiMMO

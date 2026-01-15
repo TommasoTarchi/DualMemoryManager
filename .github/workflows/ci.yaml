@@ -1,4 +1,4 @@
-name: DualMemoryManager CI
+name: MiMMO CI
 
 on: [push, pull_request]
 
