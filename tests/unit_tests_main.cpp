@@ -7,13 +7,18 @@
 #include "../include/dual_memory_manager/dual_memory_manager.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-// TODO: add description
+/**
+ * @brief Simple struct for library testing.
+ */
 struct test_struct {
   float first_field;
   int second_field;
 };
 
-// TODO: add description
+/**
+ * @brief Test using basic types ('int' and 'float') without GPU
+ * support.
+ */
 TEST_CASE("Base types - No device", "[dual_memory_manager]") {
   DualMemoryManager::DualMemoryManager dual_memory_manager =
       DualMemoryManager::DualMemoryManager();
@@ -39,7 +44,9 @@ TEST_CASE("Base types - No device", "[dual_memory_manager]") {
   REQUIRE(true);
 }
 
-// TODO: add description
+/**
+ * @brief Test using test struct without GPU support.
+ */
 TEST_CASE("Struct - No device", "[dual_memory_manager]") {
   DualMemoryManager::DualMemoryManager dual_memory_manager =
       DualMemoryManager::DualMemoryManager();

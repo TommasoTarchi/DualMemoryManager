@@ -11,7 +11,16 @@
 
 namespace DualMemoryManager {
 
-// TODO: add description
+/**
+ * @brief Reports memory used by the memory manager.
+ *
+ * @details
+ * This function prints to standard output a complete report of memory
+ * usage of the memory manager.
+ *
+ * A list of all allocated arrays is shown, with size (in bytes) and
+ * whether the array is present on device or not.
+ */
 void DualMemoryManager::report_memory_usage() {
 
   /* define header */

@@ -23,8 +23,6 @@ template <typename T> struct DualArray {
   size_t size;
 };
 
-// TODO: consider if instead of ifdef's it would be better to template
-//       the class over a bool telling whether GPU is used or not
 // TODO: separate methods definitions from their declarations (use .incl
 //       files if needed)
 // TODO: add description
@@ -35,13 +33,31 @@ private:
   size_t total_host_memory;   /*!< total used memory on host */
   size_t total_device_memory; /*!< total used memory on device */
   std::map<std::string, std::pair<size_t, bool>>
-      memory_tracker; /*!< host memory tracker for reports */
+      memory_tracker; /*!< memory tracker for reports */
 
 public:
+  /**
+   * @brief Class constructor.
+   */
   DualMemoryManager()
       : total_host_memory(0), total_device_memory(0), memory_tracker({}) {}
 
-  // TODO: add description
+  /**
+   * @brief Allocates dual array memory.
+   *
+   * @details
+   * This function allocates memory on host and (if requested) on device
+   * for a certain array. It returns an object of type DualArray,
+   * containing host and device pointers.
+   *
+   * @param label        Label that should be used to track the array in
+   *                     memory.
+   * @param num_elements Number of elements in the array.
+   * @param on_device    Whether the array should be allocated on device
+   *                     as well.
+   *
+   * @return Allocated array in the form of an object of type DualArray.
+   */
   template <typename T>
   DualArray<T> allocate(const std::string label, const size_t num_elements,
                         const bool on_device = false) {
@@ -95,7 +111,17 @@ public:
     return dual_array;
   }
 
-  // TODO: add description (specify when the method aborts)
+  /**
+   * @brief Frees memory allocated for a given dual array.
+   *
+   * @details
+   * This function frees memory allocated for a given dual array.
+   *
+   * If the array is not tracked (i.e. was not allocated using this
+   * memory manager, or it was already freed), the program aborts.
+   *
+   * @param dual_array Dual array to be freed.
+   */
   template <typename T> void free(DualArray<T> &dual_array) {
     /* check that host pointer is not null */
     if (dual_array.host_ptr == nullptr) {
@@ -125,7 +151,16 @@ public:
     }
   }
 
-  // TODO: add description
+  /**
+   * @brief Reports memory used by the memory manager.
+   *
+   * @details
+   * This function prints to standard output a complete report of memory
+   * usage of the memory manager.
+   *
+   * A list of all allocated arrays is shown, with size (in bytes) and
+   * whether the array is present on device or not.
+   */
   void report_memory_usage();
 
   // TODO: maybe the destructor is needed?

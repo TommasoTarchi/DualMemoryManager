@@ -10,7 +10,15 @@
 
 namespace DualMemoryManager {
 
-// TODO: add description
+/**
+ * @brief Aborts manager displaying an error message.
+ *
+ * @details
+ * This function aborts the memory manager displaying an error
+ * message passed by the user.
+ *
+ * @param message Error message to be displayed.
+ */
 void abort_manager(const std::string);
 
 } // namespace DualMemoryManager
