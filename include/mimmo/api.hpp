@@ -131,34 +131,57 @@ public:
   // TODO: maybe the destructor is needed?
 };
 
-// TODO: consider if a macro would be more clear to he user (even if
-//       less safe)
+} // namespace MiMMO
+
 /**
- * @brief Selects the right pointer (host or device) depending
- * on whether running on host or device.
+ * @brief Returns the right pointer (host or device) depending on whether
+ * running on host or device.
  *
  * @details
- * This function selects the host or the device pointer depending
- * on whether OpenACC is enabled or not.
+ * This macro selects the host or the device pointer depending on whether
+ * OpenACC is enabled or not.
  *
- * It should be used inside OpenACC compute regions to keep the
- * code clean.
+ * It is thought to be used inside OpenACC compute regions to keep the
+ * code clean and avoid #ifdef's.
  *
- * @param x Dual array from which the needed pointer should be
- *          selected.
+ * @param x Dual array from which the needed pointer should be selected.
  */
-template <typename T>
 #ifdef _OPENACC
-inline T *select_ptr(DualArray<T> x) {
-  return x.dev_ptr;
-}
+#define MIMMO_GET_PTR(x) ((x).dev_ptr)
 #else
-inline T *select_ptr(DualArray<T> x) {
-  return x.host_ptr;
-}
-#endif // _OPENACC
+#define MIMMO_GET_PTR(x) ((x).host_ptr)
+#endif
 
-} // namespace MiMMO
+/**
+ * @brief Returns the dimension (i.e. number of elements) of a dual array.
+ *
+ * @param x Dual array whose dimension should be returned.
+ */
+#define MIMMO_GET_DIM(x) ((x).num_elements)
+
+/**
+ * @brief Communicates in an OpenACC pragma that a dual array is present on
+ * device and copies its size to device.
+ *
+ * @details
+ * This macro must be used inside an OpenACC pragma placed at the beginning of
+ * a compute region to communicate that the dual array is already present on
+ * device.
+ *
+ * Internally, the macro communicates that the device pointer of the dual
+ * array is actually a device pointer, and copies the size of the array to
+ * device.
+ *
+ * Warning: there is no corresponding macro for copy on purpose, since all data
+ * movements of dual arrays are expected to be performed using methods of
+ * DualMemoryManager.
+ *
+ * @param x Dual array present on device.
+ */
+#ifdef _OPENACC
+#define MIMMO_PRESENT(x)                                                       \
+  deviceptr(MIMMO_GET_PTR(x)[0:MIMMO_GET_DIM(x)]) copy(MIMMO_GET_DIM(x))
+#endif
 
 /* include of templated methods definitions */
 

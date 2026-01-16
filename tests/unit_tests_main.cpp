@@ -62,7 +62,7 @@ TEST_CASE("Memory manager - struct - No device", "[mimmo]") {
 }
 
 /**
- * @brief Pointer selection test without GPU support.
+ * @brief Pointer selection macro test without GPU support.
  */
 TEST_CASE("Pointer selection - No device", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -70,10 +70,27 @@ TEST_CASE("Pointer selection - No device", "[mimmo]") {
   MiMMO::DualArray<int> test_array =
       memory_manager.allocate<int>("first_test_array", 10, false);
 
-  int *ref_ptr = test_array.host_ptr;
-  int *test_ptr = MiMMO::select_ptr(test_array);
+  const int *ref_ptr = test_array.host_ptr;
+  const int *test_ptr = MIMMO_GET_PTR(test_array);
 
   REQUIRE(test_ptr == ref_ptr);
+
+  memory_manager.free(test_array);
+}
+
+/**
+ * @brief Size retrieving macro test without GPU support.
+ */
+TEST_CASE("Size retrieving", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualArray<int> test_array =
+      memory_manager.allocate<int>("first_test_array", 10, false);
+
+  const size_t ref_dim = test_array.num_elements;
+  const size_t test_dim = MIMMO_GET(test_array);
+
+  REQUIRE(test_dim == ref_dim);
 
   memory_manager.free(test_array);
 }
@@ -126,7 +143,7 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
 }
 
 /**
- * @brief Pointer selection test with GPU support.
+ * @brief Pointer selection macro test with GPU support.
  */
 TEST_CASE("Pointer selection", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -134,9 +151,9 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   MiMMO::DualArray<int> test_array =
       memory_manager.allocate<int>("first_test_array", 10, true);
 
-  int *ref_ptr_dev = test_array.dev_ptr;
-  int *ref_ptr_host = test_array.host_ptr;
-  int *test_ptr = MiMMO::select_ptr(test_array);
+  const int *ref_ptr_dev = test_array.dev_ptr;
+  const int *ref_ptr_host = test_array.host_ptr;
+  const int *test_ptr = MIMMO_GET_PTR(test_array);
 
   REQUIRE(test_ptr == ref_ptr_dev && test_ptr != ref_ptr_host);
 

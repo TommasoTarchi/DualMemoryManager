@@ -81,7 +81,7 @@ pointers of the array, in addition to the number of elements, the size in bytes 
 by the memory manager to track the array.
 
 To use MiMMO in your C++ project, include the header `mimmo/api.hpp` and access the functions within
-the `MiMMO` namespace. Here's a simple example:
+the `MiMMO` namespace (macros, instead, always begin with `MIMMO_`). Here's a simple example:
 
 TODO: add example
 
