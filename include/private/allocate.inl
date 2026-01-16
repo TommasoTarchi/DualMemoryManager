@@ -49,7 +49,7 @@ DualArray<T> DualMemoryManager::allocate(const std::string label,
     dual_array.dev_ptr = (T *)acc_malloc(num_elements * sizeof(T));
 #endif // _OPENACC
 
-    if (dual_array.dev_ptr == nullptr) {
+    if (!(dual_array.dev_ptr)) {
       std::free(dual_array.host_ptr);
       dual_array.host_ptr = nullptr;
       abort_manager("Failed to allocate device memory.");
