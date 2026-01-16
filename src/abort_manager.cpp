@@ -9,7 +9,6 @@
 
 namespace MiMMO {
 
-// TODO: maybe add MPI
 /**
  * @brief Aborts manager displaying an error message.
  *

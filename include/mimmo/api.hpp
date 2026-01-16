@@ -33,9 +33,6 @@ template <typename T> struct DualArray {
   size_t size;         /*!< size in bytes of the array */
 };
 
-// TODO: add methods for copying data host-to-device and vice versa
-// TODO: maye add alignment (either to the constructor or to the memory
-//       allocation call
 /**
  * @brief Class for host-device memory management.
  *
