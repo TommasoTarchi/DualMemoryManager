@@ -68,7 +68,7 @@ TEST_CASE("Pointer selection - No device", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("first_test_array", 10, false);
+      memory_manager.allocate<int>("test_array", 10, false);
 
   const int *ref_ptr = test_array.host_ptr;
   const int *test_ptr = MIMMO_GET_PTR(test_array);
@@ -85,7 +85,7 @@ TEST_CASE("Size retrieving", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("first_test_array", 10, false);
+      memory_manager.allocate<int>("test_array", 10, false);
 
   const size_t ref_dim = test_array.dim;
   const size_t test_dim = MIMMO_GET_DIM(test_array);
@@ -149,7 +149,7 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("first_test_array", 10, true);
+      memory_manager.allocate<int>("test_array", 10, true);
 
   const int *ref_ptr_dev = test_array.dev_ptr;
   const int *ref_ptr_host = test_array.host_ptr;
@@ -167,7 +167,7 @@ TEST_CASE("Memcopy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("first_test_array", 5, true);
+      memory_manager.allocate<int>("test_array", 5, true);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] = i;
@@ -188,5 +188,40 @@ TEST_CASE("Memcopy", "[mimmo]") {
           (test_array.dev_ptr[2] == test_array.host_ptr[2] * 10) &&
           (test_array.dev_ptr[3] == test_array.host_ptr[3] * 10) &&
           (test_array.dev_ptr[4] == test_array.host_ptr[4] * 10))
+
+  memory_manager.free(test_array);
+}
+
+/**
+ * @brief Present macro test for OpenACC pragmas.
+ */
+TEST_CASE("Present macro for pragma test", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualArray<int> test_array =
+      memory_manager.allocate<int>("test_array", 5, true);
+
+  for (int i = 0; i < 5; i++)
+    test_array.host_ptr[i] = i;
+
+  memory_manager.copy_host_to_device(test_array);
+
+  for (int i = 0; i < 5; i++)
+    test_array.host_ptr[i] += 1;
+
+#pragma acc parallel MIMMO_PRESENT(test_array)
+  {
+#pragma acc loop
+    for (int i = 0; i < MIMMO_GET_DIM(test_array); i++)
+      MIMMO_GET_PTR(test_array)[i] * 10;
+  }
+
+  memory_manager.copy_device_to_host(test_array);
+
+  REQUIRE(test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
+          test_array.host_ptr[2] == 20 && test_array.host_ptr[3] == 30 &&
+          test_array.host_ptr[4] == 40);
+
+  memory_manager.free(test_array);
 }
 #endif // _OPENACC
