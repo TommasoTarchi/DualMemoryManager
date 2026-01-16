@@ -32,11 +32,11 @@ TEST_CASE("Memory manager - base types - No device", "[dual_memory_manager]") {
 
   dual_memory_manager.report_memory_usage();
 
-  dual_memory_manager.free<int>(first_test_array);
+  dual_memory_manager.free(first_test_array);
 
   dual_memory_manager.report_memory_usage();
 
-  dual_memory_manager.free<float>(second_test_array);
+  dual_memory_manager.free(second_test_array);
 
   dual_memory_manager.report_memory_usage();
 
@@ -54,7 +54,7 @@ TEST_CASE("Memory manager - struct - No device", "[dual_memory_manager]") {
 
   dual_memory_manager.report_memory_usage();
 
-  dual_memory_manager.free<test_struct>(test_array);
+  dual_memory_manager.free(test_array);
 
   dual_memory_manager.report_memory_usage();
 
@@ -71,9 +71,9 @@ TEST_CASE("Pointer selection - No device", "[dual_memory_manager]") {
       dual_memory_manager.allocate<int>("first_test_array", 10, false);
 
   int *ref_ptr = test_array.host_ptr;
-  int *test_ptr = MiMMO::select_ptr<int>(test_array);
+  int *test_ptr = MiMMO::select_ptr(test_array);
 
   REQUIRE(test_ptr == ref_ptr);
 
-  dual_memory_manager.free<int>(test_array);
+  dual_memory_manager.free(test_array);
 }

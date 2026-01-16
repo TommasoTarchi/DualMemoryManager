@@ -91,8 +91,6 @@ public:
    * If the array is not tracked (i.e. was not allocated using this
    * memory manager, or it was already freed), the program aborts.
    *
-   * @tparam T Type of elements in array to be freed.
-   *
    * @param dual_array Dual array to be freed.
    */
   template <typename T> void free(DualArray<T> &dual_array);
@@ -124,8 +122,6 @@ public:
  *
  * It should be used inside OpenACC compute regions to keep the
  * code clean.
- *
- * @tparam T Base type of dual array.
  *
  * @param x Dual array from which the needed pointer should be
  *          selected.
