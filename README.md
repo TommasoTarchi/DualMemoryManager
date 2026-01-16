@@ -76,7 +76,7 @@ The generated documentation will be placed in `build/docs/`.
 
 ## Usage
 
-The library works with so called "dual arrays", i.e. data structures containing host and device
+The library works with so called *dual arrays*, i.e. data structures containing host and device
 pointers of the array, in addition to the number of elements, the size in bytes and the label used
 by the memory manager to track the array.
 
@@ -116,20 +116,20 @@ for how to generate it).
 ### Classes
 
 - `DualMemoryManager`: memory manager that can be used to manage dual arrays; the following methods
-  are made available:
-  - `allocate()`: allocate requested memory on host and (optionally) on device;
-  - `copy_host_to_device()`: copy array data from host to device;
-  - `copy_device_to_host()`: copy array data from device to host;
-  - `free()`: free both host and device memory;
-  - `report_memory_usage()`: print report of memory usage for both host and device.
+  are currently available:
+  - `allocate()`: allocates the requested memory on host and (optionally) on device;
+  - `copy_host_to_device()`: copies the array data from host to device;
+  - `copy_device_to_host()`: copies the array data from device to host;
+  - `free()`: frees both host and device memory;
+  - `report_memory_usage()`: prints a report of memory usage for both host and device.
 
 ### Helper macros
 
-- `MIMMO_GET_PTR()`: returns the device pointer of a dual array if OpenACC is enabled, and the host
-  pointer otherwise; it is thought to be used inside OpenACC compute regions.
-- `MIMMO_GET_DIM()`: returns the dimension (i.e. number of elements) of a dual array.
+- `MIMMO_GET_PTR()`: if OpenACC is enabled it returns its device pointer, otherwise its host pointer;
+  it is thought to be used inside OpenACC compute regions.
+- `MIMMO_GET_DIM()`: returns the dimension (i.e. the number of elements) of a dual array.
 - `MIMMO_PRESENT()`: communicates inside a pragma decorating a compute region that the data of a
-  dual array are already present on device; also copies dimension of array to device.
+  dual array are already present on device; also copies the array dimension to device.
 
 ## Contributing
 
