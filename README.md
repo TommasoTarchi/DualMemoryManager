@@ -32,7 +32,7 @@ any time.
 
 ## Requirements
 
-TODO: all
+TODO
 
 ## Building and Testing
 
@@ -101,7 +101,8 @@ export LD_LIBRARY_PATH=</path/to/MiMMO>/build:$LD_LIBRARY_PATH
 ## API Reference
 
 The following is a list of all features available in the MiMMO API. For a more detailed description
-of them, please see the Doxygen documentation (see #generate-documentation for how to generate it).
+of them, please see the Doxygen documentation (see [Generate documentation](#generate-documentation)
+for how to generate it).
 
 ### Data structures
 
@@ -130,8 +131,12 @@ of them, please see the Doxygen documentation (see #generate-documentation for h
 
 ## Contributing
 
-TODO: all
+Contributions are welcome!
+
+If you find a bug, have an idea for an improvement, or want to add a new
+feature, feel free to open an issue or submit a pull request.
 
 ## License
 
-TODO: all
+This project is licensed under the GNU General Public License v3.0.
+See the [LICENSE](LICENSE) file for details.
