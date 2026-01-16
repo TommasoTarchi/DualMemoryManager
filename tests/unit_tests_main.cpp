@@ -16,10 +16,10 @@ struct test_struct {
 };
 
 /**
- * @brief Test using basic types ('int' and 'float') without GPU
+ * @brief Memory manager test using basic types ('int' and 'float') without GPU
  * support.
  */
-TEST_CASE("Base types - No device", "[dual_memory_manager]") {
+TEST_CASE("Memory manager - base types - No device", "[dual_memory_manager]") {
   MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> first_test_array =
@@ -44,9 +44,9 @@ TEST_CASE("Base types - No device", "[dual_memory_manager]") {
 }
 
 /**
- * @brief Test using test struct without GPU support.
+ * @brief Memory manager test using test struct without GPU support.
  */
-TEST_CASE("Struct - No device", "[dual_memory_manager]") {
+TEST_CASE("Memory manager - struct - No device", "[dual_memory_manager]") {
   MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<test_struct> test_array =
@@ -59,4 +59,21 @@ TEST_CASE("Struct - No device", "[dual_memory_manager]") {
   dual_memory_manager.report_memory_usage();
 
   REQUIRE(true);
+}
+
+/**
+ * @brief Pointer selection test without GPU support.
+ */
+TEST_CASE("Pointer selection - No device", "[dual_memory_manager]") {
+  MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualArray<int> test_array =
+      dual_memory_manager.allocate<int>("first_test_array", 10, false);
+
+  int *ref_ptr = test_array.host_ptr;
+  int *test_ptr = MiMMO::select_ptr<int>(test_array);
+
+  REQUIRE(test_ptr == ref_ptr);
+
+  dual_memory_manager.free<int>(test_array);
 }

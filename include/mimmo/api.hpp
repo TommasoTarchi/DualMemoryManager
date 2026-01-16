@@ -1,7 +1,7 @@
 /**
  * @file api.cpp
  *
- * @brief Main library header with memory manager class definition.
+ * @brief Main library header with API definitions.
  */
 
 #pragma once
@@ -11,6 +11,8 @@
 #ifdef _OPENACC
 #include <openacc.h>
 #endif // _OPENACC
+
+/* API */
 
 namespace MiMMO {
 
@@ -110,8 +112,38 @@ public:
   // TODO: maybe the destructor is needed?
 };
 
+// TODO: consider if a macro would be more clear to he user (even if
+//       less safe)
+/**
+ * @brief Selects the right pointer (host or device) depending
+ * on whether running on host or device.
+ *
+ * @details
+ * This function selects the host or the device pointer depending
+ * on whether OpenACC is enabled or not.
+ *
+ * It should be used inside OpenACC compute regions to keep the
+ * code clean.
+ *
+ * @tparam T Base type of dual array.
+ *
+ * @param x Dual array from which the needed pointer should be
+ *          selected.
+ */
+template <typename T>
+#ifdef _OPENACC
+inline T *select_ptr(DualArray<T> x) {
+  return x.dev_ptr;
+}
+#else
+inline T *select_ptr(DualArray<T> x) {
+  return x.host_ptr;
+}
+#endif // _OPENACC
+
 } // namespace MiMMO
 
 /* include of templated methods definitions */
+
 #include "../private/allocate.inl"
 #include "../private/free.inl"
