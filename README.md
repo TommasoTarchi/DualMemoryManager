@@ -123,11 +123,13 @@ for how to generate it).
   - `free()`: free both host and device memory;
   - `report_memory_usage()`: print report of memory usage for both host and device.
 
-### Functions
+### Helper macros
 
-- `select_ptr()`: function returning the host or device pointer of a dual array depending on whether
-  OpenACC is enabled or not; it is thought to be used inside compute regions to make code cleaner and
-  avoid #ifdef's.
+- `MIMMO_GET_PTR()`: returns the device pointer of a dual array if OpenACC is enabled, and the host
+  pointer otherwise; it is thought to be used inside OpenACC compute regions.
+- `MIMMO_GET_DIM()`: returns the dimension (i.e. number of elements) of a dual array.
+- `MIMMO_PRESENT()`: communicates inside a pragma decorating a compute region that the data of a
+  dual array are already present on device; also copies dimension of array to device.
 
 ## Contributing
 
