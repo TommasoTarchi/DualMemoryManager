@@ -83,9 +83,52 @@ pointers of the array, in addition to the number of elements, the size in bytes 
 by the memory manager to track the array.
 
 To use MiMMO in your C++ project, include the header `mimmo/api.hpp` and access the functions within
-the `MiMMO` namespace (macros, instead, always begin with `MIMMO_`). Here's a simple example:
+the `MiMMO` namespace; macros, instead, always begin with `MIMMO_`.
 
-TODO: add example
+Here's a very simple example of C++ code using the library:
+```c++
+#include <iostream>
+#include "mimmo/api.hpp"
+
+#define DIM 5
+
+int main() {
+  /* instantiate a dual memory manager */
+  MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
+
+  /* instantiate a dual array */
+  MiMMO::DualArray<int> dual_array = memory_manager.allocate<int>("dual_array", DIM, true);
+
+  /* initialize host array */
+  for (int i = 0; i < dual_array.dim; i++)
+    dual_array.host_ptr[i] = i;
+
+  /* copy data to device */
+  memory_manager.copy_host_to_device(dual_array);
+
+  /* OpenACC compute region */
+#pragma acc parallel MIMMO_PRESENT(dual_array)
+  {
+    /* perform calculation on device */
+#pragma acc loop
+    for (int i = 0; i < MIMMO_GET_DIM(dual_array); i++)
+      MIMMO_GET_PTR(dual_array)[i] * 10;
+  }
+
+  /* copy data to host */
+  memory_manager.copy_device_to_host(dual_array);
+
+  /* print updated values in array */
+  for (int i = 0; i < dual_array.dim; i++)
+      std::cout << dual_array.host_array[i] << "  ";
+  std::cout << std::endl;
+
+  /* free dual array memory */
+  memory_manager.free(dual_array);
+
+  return 0;
+}
+```
 
 Compile your program linking against the MiMMO library as follows, adjusting the paths as necessary:
 ```bash
@@ -144,3 +187,9 @@ feature, feel free to open an issue or submit a pull request.
 
 This project is licensed under the GNU General Public License v3.0.
 See the [LICENSE](LICENSE) file for details.
+
+If you use this library in your work, please consider citing the repository:
+````
+Tarchi, T. (2026). MiMMO (Minimal Memory Manager for Openacc): a simple, safe, easy to use CPU/GPU
+memory manager to work with OpenACC. GitHub repository. https://github.com/TommasoTarchi/MiMMO
+````
