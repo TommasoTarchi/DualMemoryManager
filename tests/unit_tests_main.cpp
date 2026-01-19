@@ -168,9 +168,13 @@ TEST_CASE("Memcopy", "[mimmo]") {
 
   MiMMO::DualArray<int> test_array =
       memory_manager.allocate<int>("test_array", 5, true);
+  MiMMO::DualArray<int> test_array_copy =
+      memory_manager.allocate<int>("test_array_copy", 5, true);
 
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
+    test_array_copy.host_ptr[i] = i;
+  }
 
   memory_manager.copy_host_to_device(test_array);
 
@@ -183,11 +187,11 @@ TEST_CASE("Memcopy", "[mimmo]") {
 
   memory_manager.copy_device_to_host(test_array);
 
-  REQUIRE(((test_array.dev_ptr[0] == test_array.host_ptr[0] * 10) &&
-           (test_array.dev_ptr[1] == test_array.host_ptr[1] * 10) &&
-           (test_array.dev_ptr[2] == test_array.host_ptr[2] * 10) &&
-           (test_array.dev_ptr[3] == test_array.host_ptr[3] * 10) &&
-           (test_array.dev_ptr[4] == test_array.host_ptr[4] * 10)));
+  REQUIRE(((test_array.host_ptr[0] == test_array.host_ptr_copy[0] * 10) &&
+           (test_array.host_ptr[1] == test_array.host_ptr_copy[1] * 10) &&
+           (test_array.host_ptr[2] == test_array.host_ptr_copy[2] * 10) &&
+           (test_array.host_ptr[3] == test_array.host_ptr_copy[3] * 10) &&
+           (test_array.host_ptr[4] == test_array.host_ptr_copy[4] * 10)));
 
   memory_manager.free(test_array);
 }
@@ -209,7 +213,7 @@ TEST_CASE("Parallel region macros test", "[mimmo]") {
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] += 1;
 
-  MIMMO_PARALMIMMO_PARALLEL_REGION(MIMMO_PRESENT(test_array)) {
+  MIMMO_PARALLEL_REGION(MIMMO_PRESENT(test_array)) {
 #pragma acc loop
     for (int i = 0; i < MIMMO_GET_DIM(test_array); i++)
       MIMMO_GET_PTR(test_array)[i] *= 10;
