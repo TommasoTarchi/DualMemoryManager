@@ -148,9 +148,9 @@ public:
  * @param x Dual array from which the needed pointer should be selected.
  */
 #ifdef _OPENACC
-#define MIMMO_GET_PTR(x) (x).dev_ptr
+#define MIMMO_GET_PTR(x) x.dev_ptr
 #else
-#define MIMMO_GET_PTR(x) (x).host_ptr
+#define MIMMO_GET_PTR(x) x.host_ptr
 #endif
 
 /**
@@ -158,7 +158,7 @@ public:
  *
  * @param x Dual array whose dimension should be returned.
  */
-#define MIMMO_GET_DIM(x) (x).dim
+#define MIMMO_GET_DIM(x) x.dim
 
 /**
  * @brief Communicates in an OpenACC pragma that a dual array is present on
@@ -179,7 +179,7 @@ public:
  * @param x Dual array present on device.
  */
 #ifdef _OPENACC
-#define MIMMO_PRESENT(x) deviceptr((x).dev_ptr)
+#define MIMMO_PRESENT(x) deviceptr(x.dev_ptr)
 #else
 #define MIMMO_PRESENT(x) ()
 #endif
