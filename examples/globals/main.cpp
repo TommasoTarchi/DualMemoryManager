@@ -9,7 +9,7 @@ int main() {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   /* allocate memory for global array */
-  memory_manager.allocate("global_array", global_array_size, true);
+  memory_manager.allocate<int>("global_array", global_array_size, true);
 
   /* initialize array on host */
   for (int i = 0; i < global_array_size; i++)

@@ -5,4 +5,4 @@
 #include "mimmo/api.hpp"
 
 extern int global_array_size;
-extern MiMMO::DualArray *global_array;
+extern MiMMO::DualArray<int> global_array;

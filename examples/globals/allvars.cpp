@@ -3,4 +3,4 @@
 #include "allvars.hpp"
 
 int global_array_size;
-MiMMO::DualArray *global_array;
+MiMMO::DualArray<int> global_array;
