@@ -155,7 +155,7 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   const int *ref_ptr_host = test_array.host_ptr;
   const int *test_ptr = MIMMO_GET_PTR(test_array);
 
-  REQUIRE(test_ptr == ref_ptr_dev && test_ptr != ref_ptr_host);
+  REQUIRE((test_ptr == ref_ptr_dev && test_ptr != ref_ptr_host));
 
   memory_manager.free(test_array);
 }
@@ -183,11 +183,11 @@ TEST_CASE("Memcopy", "[mimmo]") {
 
   memory_manager.copy_device_to_host(test_array);
 
-  REQUIRE((test_array.dev_ptr[0] == test_array.host_ptr[0] * 10) &&
-          (test_array.dev_ptr[1] == test_array.host_ptr[1] * 10) &&
-          (test_array.dev_ptr[2] == test_array.host_ptr[2] * 10) &&
-          (test_array.dev_ptr[3] == test_array.host_ptr[3] * 10) &&
-          (test_array.dev_ptr[4] == test_array.host_ptr[4] * 10))
+  REQUIRE(((test_array.dev_ptr[0] == test_array.host_ptr[0] * 10) &&
+           (test_array.dev_ptr[1] == test_array.host_ptr[1] * 10) &&
+           (test_array.dev_ptr[2] == test_array.host_ptr[2] * 10) &&
+           (test_array.dev_ptr[3] == test_array.host_ptr[3] * 10) &&
+           (test_array.dev_ptr[4] == test_array.host_ptr[4] * 10)));
 
   memory_manager.free(test_array);
 }
@@ -218,9 +218,9 @@ TEST_CASE("Present macro for pragma test", "[mimmo]") {
 
   memory_manager.copy_device_to_host(test_array);
 
-  REQUIRE(test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
-          test_array.host_ptr[2] == 20 && test_array.host_ptr[3] == 30 &&
-          test_array.host_ptr[4] == 40);
+  REQUIRE((test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
+           test_array.host_ptr[2] == 20 && test_array.host_ptr[3] == 30 &&
+           test_array.host_ptr[4] == 40));
 
   memory_manager.free(test_array);
 }
