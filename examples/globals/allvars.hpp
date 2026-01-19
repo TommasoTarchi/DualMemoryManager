@@ -1,4 +1,8 @@
-// TODO: add file description
+/**
+ * @file allvars.hpp
+ *
+ * @brief Header with declarations of global variables.
+ */
 
 #pragma once
 

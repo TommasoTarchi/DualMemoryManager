@@ -1,4 +1,8 @@
-// TODO: add file description
+/**
+ * @file allvars.cpp
+ *
+ * @brief Source file with definitions of global variables.
+ */
 
 #include "allvars.hpp"
 

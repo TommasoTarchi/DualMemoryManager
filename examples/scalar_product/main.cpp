@@ -3,14 +3,6 @@
  *
  * @brief Very simple example of scalar product between two arrays performed
  * on device using MiMMO's memory manager.
- *
- * @details
- * To compile and run use:
- * - nvc++ -acc -Minfo=all -c main.cpp -I</path/to/MiMMO>/include
- * - nvc++ -acc -Minfo=all main.o -L</path/to/MiMMO>/build -lmimmo -o
- * main.x
- * - export LD_LIBRARY_PATH=</path/to/MiMMO>/build:$LD_LIBRARY_PATH
- * - ./main.x
  */
 
 #include "mimmo/api.hpp"
@@ -46,7 +38,7 @@ int main() {
 
   /* OpenACC compute region */
 #pragma acc parallel MIMMO_PRESENT(dual_array_1) MIMMO_PRESENT(dual_array_2)   \
-    MIMMO_PRESENT(dual_array_res)
+    MIMMO_PRESENT(dual_array_res) default(none)
   {
     /* perform calculation on device */
 #pragma acc loop

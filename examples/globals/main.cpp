@@ -1,12 +1,19 @@
-// TODO: add file description
+/**
+ * @file main.cpp
+ *
+ * @brief Simple example of global variables manipulation using MiMMO
+ * library.
+ */
 
 #include "allvars.hpp"
 #include <iostream>
 
-// TODO: add comments
 int main() {
   /* instantiate the dual memory manager */
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  /* define size of global array */
+  global_array_size = 10;
 
   /* allocate memory for global array */
   memory_manager.allocate<int>("global_array", global_array_size, true);
