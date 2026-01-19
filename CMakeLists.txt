@@ -28,7 +28,7 @@ if(OPENACC)
     find_package(OpenACC REQUIRED)
 
     # link library
-    target_link_libraries(${arg1} PRIVATE OpenACC::OpenACC_CXX)
+    target_link_libraries(${arg1} PUBLIC OpenACC::OpenACC_CXX)
 
     # TODO: maybe add custom compile options (ACCFLAGS for instance)
 endif()
