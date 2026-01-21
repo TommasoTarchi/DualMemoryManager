@@ -4,10 +4,8 @@
 
 **WARNING**: Compilation for GPU is not available with CMake yet, it will be soon.
 
-**WARNING**: This README is still to be completed.
-
 **MiMMO** (Minimal Memory Manager for Openacc) is a simple, safe, easy to use CPU/GPU memory manager to
-work with OpenACC.
+work with OpenACC ([https://www.openacc.org/](https://www.openacc.org/)) in C++.
 
 The pragma-based approach of OpenACC is extremely useful, however it only allows for a very high-level
 management of host and device memory, and it is often confusing for those who like to understand what is
@@ -87,9 +85,9 @@ by the memory manager to track the array.
 To use MiMMO in your C++ project, include the header `mimmo/api.hpp` and access the functions within
 the `MiMMO` namespace; macros, instead, always begin with `MIMMO_`.
 
-Examples of working OpenACC programs using MiMMO can ve found in the [examples folder](./examples/).
+Examples of working OpenACC programs using MiMMO can be found in the [examples folder](./examples/).
 
-Compile your program linking against the MiMMO library as follows, adjusting the paths as necessary:
+Compile your program linking against the MiMMO library as follows, adjusting the paths as needed:
 ```bash
 nvc++ -acc -Minfo=all -c my_program.cpp -I</path/to/MiMMO>/include
 nvc++ -acc -Minfo=all my_program.o -L</path/to/MiMMO>/build -lmimmo -o my_program
@@ -111,8 +109,8 @@ for how to generate it).
 ### Data structures
 
 - `DualArray`: dual array data structure; it contains the following fields:
-  - `host_ptr`: pointer to array memory on host;
-  - `dev_ptr`: pointer to array memory on device;
+  - `host_ptr`: pointer to allocated memory on host;
+  - `dev_ptr`: pointer to allocated memory on device;
   - `label`: label used to track dual array memory;
   - `dim`: number of elements in array;
   - `size`: size of array in bytes.
@@ -131,21 +129,21 @@ for how to generate it).
 ### Helper macros
 
 - `MIMMO_GET_PTR()`: if OpenACC is enabled it returns its device pointer, otherwise its host pointer;
-  it is thought to be used inside OpenACC compute regions.
-- `MIMMO_PRESENT()`: communicates inside a pragma decorating a compute region that the data of a
-  dual array are already present on device.
+  it is thought to be used inside OpenACC parallel regions.
+- `MIMMO_PRESENT()`: communicates inside a pragma decorating an OpenACC parallel region that the data
+  of a dual array are already present on device.
 
 ## Contributing
 
 Contributions are welcome!
 
-If you find a bug, have an idea for an improvement, or want to add a new
-feature, feel free to open an issue or submit a pull request.
+If you find a bug, have an idea for an improvement, or want to add a new feature, feel free to open
+an issue or submit a pull request.
 
 ## License
 
 This project is licensed under the GNU General Public License v3.0.
-See the [LICENSE](LICENSE) file for details.
+See [LICENSE](LICENSE) for details.
 
 If you use this library in your work, please consider citing the repository:
 ````
