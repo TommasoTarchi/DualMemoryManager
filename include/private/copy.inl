@@ -21,14 +21,16 @@ namespace MiMMO {
  */
 template <typename T>
 void DualMemoryManager::copy_host_to_device(DualArray<T> dual_array) {
-  /* check that host and device pointers are initialized */
+  /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
     abort_manager(dual_array.label + "'s host pointer is a null pointer.");
-  if (dual_array.host_ptr == nullptr)
+
+#ifdef _OPENACC
+  /* check that device pointer is initialized */
+  if (dual_array.dev_ptr == nullptr)
     abort_manager(dual_array.label + "'s device pointer is a null pointer.");
 
   /* copy data from host to device */
-#ifdef _OPENACC
   acc_memcpy_to_device(dual_array.dev_ptr, dual_array.host_ptr,
                        dual_array.size);
 #endif
@@ -48,14 +50,16 @@ void DualMemoryManager::copy_host_to_device(DualArray<T> dual_array) {
  */
 template <typename T>
 void DualMemoryManager::copy_device_to_host(DualArray<T> dual_array) {
-  /* check that host and device pointers are initialized */
+  /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
     abort_manager(dual_array.label + "'s host pointer is a null pointer.");
-  if (dual_array.host_ptr == nullptr)
+
+#ifdef _OPENACC
+  /* check that device pointer is initialized */
+  if (dual_array.dev_ptr == nullptr)
     abort_manager(dual_array.label + "'s device pointer is a null pointer.");
 
   /* copy data from device to host */
-#ifdef _OPENACC
   acc_memcpy_from_device(dual_array.host_ptr, dual_array.dev_ptr,
                          dual_array.size);
 #endif

@@ -32,22 +32,13 @@ DualArray<T> DualMemoryManager::allocate(const std::string label,
                                          const bool on_device) {
   DualArray<T> dual_array;
 
-  /* check that device has not been required if openACC is not enabled */
-#ifndef _OPENACC
-  if (on_device)
-    abort_manager(label + " was requested to be allocated on device as well, "
-                          "but openACC is not enabled.");
-#endif // _OPENACC
-
   /* allocate memory on host */
   dual_array.host_ptr = (T *)std::malloc(dim * sizeof(T));
 
   /* if required, allocate memory on device */
-  if (on_device) {
-
 #ifdef _OPENACC
+  if (on_device) {
     dual_array.dev_ptr = (T *)acc_malloc(dim * sizeof(T));
-#endif // _OPENACC
 
     if (!(dual_array.dev_ptr)) {
       std::free(dual_array.host_ptr);
@@ -58,6 +49,9 @@ DualArray<T> DualMemoryManager::allocate(const std::string label,
   } else {
     dual_array.dev_ptr = nullptr;
   }
+#else
+  dual_array.dev_ptr = nullptr;
+#endif // _OPENACC
 
   /* update array label */
   dual_array.label = label;
@@ -68,11 +62,16 @@ DualArray<T> DualMemoryManager::allocate(const std::string label,
 
   /* update used memory and memory tracker */
   total_host_memory += dual_array.size;
+#ifdef _OPENACC
   if (on_device)
     total_device_memory += dual_array.size;
 
   const bool ret =
       add_to_memory_tracker(memory_tracker, label, dual_array.size, on_device);
+#else
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, label, dual_array.size, false);
+#endif // _OPENACC
 
   if (ret)
     abort_manager(label + " already exists. Please choose another label.");

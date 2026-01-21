@@ -16,76 +16,6 @@ struct test_struct {
 };
 
 /**
- * @brief Memory manager test using basic types ('int' and 'float') without GPU
- * support.
- */
-TEST_CASE("Memory manager - base types - No device", "[mimmo]") {
-  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
-
-  const size_t first_size = 10 * sizeof(int);
-  const size_t second_size = 20 * sizeof(float);
-
-  MiMMO::DualArray<int> first_test_array =
-      memory_manager.allocate<int>("first_test_array", 10, false);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_1 =
-      memory_manager.return_total_memory_usage();
-
-  MiMMO::DualArray<float> second_test_array =
-      memory_manager.allocate<float>("second_test_array", 20, false);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_2 =
-      memory_manager.return_total_memory_usage();
-
-  memory_manager.free(first_test_array);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_3 =
-      memory_manager.return_total_memory_usage();
-
-  memory_manager.free(second_test_array);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_4 =
-      memory_manager.return_total_memory_usage();
-
-  REQUIRE((tot_mem_usage_1.first == first_size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == (first_size + second_size) &&
-           tot_mem_usage_2.second == 0 &&
-           tot_mem_usage_3.first == second_size &&
-           tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
-           tot_mem_usage_4.second == 0));
-}
-
-/**
- * @brief Memory manager test using test struct without GPU support.
- */
-TEST_CASE("Memory manager - struct - No device", "[mimmo]") {
-  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
-
-  const size_t size = 10 * sizeof(test_struct);
-
-  MiMMO::DualArray<test_struct> test_array =
-      memory_manager.allocate<test_struct>("test_array", 10, false);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_1 =
-      memory_manager.return_total_memory_usage();
-
-  memory_manager.free(test_array);
-
-  memory_manager.report_memory_usage();
-  const std::pair<size_t, size_t> tot_mem_usage_2 =
-      memory_manager.return_total_memory_usage();
-
-  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
-}
-
-#ifdef _OPENACC
-/**
  * @brief Memory manager test using basic types ('int' and 'float') with GPU
  * support.
  */
@@ -121,6 +51,7 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
   const std::pair<size_t, size_t> tot_mem_usage_4 =
       memory_manager.return_total_memory_usage();
 
+#ifdef _OPENACC
   REQUIRE((tot_mem_usage_1.first == first_size &&
            tot_mem_usage_1.second == first_size &&
            tot_mem_usage_2.first == (first_size + second_size) &&
@@ -128,6 +59,14 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
            tot_mem_usage_3.first == second_size &&
            tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
            tot_mem_usage_4.second == 0));
+#else
+  REQUIRE((tot_mem_usage_1.first == first_size && tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first == (first_size + second_size) &&
+           tot_mem_usage_2.second == 0 &&
+           tot_mem_usage_3.first == second_size &&
+           tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
+           tot_mem_usage_4.second == 0));
+#endif // _OPENACC
 }
 
 /**
@@ -151,8 +90,13 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
   const std::pair<size_t, size_t> tot_mem_usage_2 =
       memory_manager.return_total_memory_usage();
 
+#ifdef _OPENACC
   REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == size &&
            tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
+#else
+  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
+#endif // _OPENACC
 }
 
 /**
@@ -168,7 +112,11 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   const int *ref_ptr_host = test_array.host_ptr;
   const int *test_ptr = MIMMO_GET_PTR(test_array);
 
-  REQUIRE((test_ptr == ref_ptr_dev && test_ptr != ref_ptr_host));
+#ifdef _OPENACC
+  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+#else
+  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+#endif // _OPENACC
 
   memory_manager.free(test_array);
 }
@@ -195,7 +143,7 @@ TEST_CASE("Memcopy", "[mimmo]") {
   {
 #pragma acc loop
     for (int i = 0; i < 5; i++)
-      test_array.dev_ptr[i] *= 10;
+      MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
   memory_manager.copy_device_to_host(test_array);
@@ -235,10 +183,15 @@ TEST_CASE("Present macro test", "[mimmo]") {
 
   memory_manager.copy_device_to_host(test_array);
 
+#ifdef _OPENACC
   REQUIRE((test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
            test_array.host_ptr[2] == 20 && test_array.host_ptr[3] == 30 &&
            test_array.host_ptr[4] == 40));
+#else
+  REQUIRE((test_array.host_ptr[0] == 10 && test_array.host_ptr[1] == 20 &&
+           test_array.host_ptr[2] == 30 && test_array.host_ptr[3] == 40 &&
+           test_array.host_ptr[4] == 50));
+#endif // _OPENACC
 
   memory_manager.free(test_array);
 }
-#endif // _OPENACC
