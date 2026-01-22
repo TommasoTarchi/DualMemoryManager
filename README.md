@@ -32,15 +32,15 @@ any time.
 
 ### Notes on compiler
 
-While the library is thought to be used inside OpenACC programs, it is not required to have GPU support
-in its compilation phase.
+Even if the library is thought to be used inside OpenACC programs, having GPU support is not required
+during its compilation.
 
 In fact, all parts of the library involving OpenACC calls are header-only; i.e. to use them with GPU
 capabilities you only need to link OpenACC while compiling your own program.
 
-The only part of the library that is compiled differently depending on whether OpenACC is enabled or not
-are the tests. If you are using a compiler that does not support OpenACC, please disable the tests
-(using `-DUNIT_TESTS=OFF`) or compile them without GPU support (using `-DOPENACC=OFF`).
+The only part of the library that is compiled differently depending on whether OpenACC is enabled are the
+tests. If you are using a compiler that does not support OpenACC, please compile without GPU support
+(using `-DOPENACC=OFF`) or disable tests completely (using `-DUNIT_TESTS=OFF`).
 
 In any case, we suggest to use the same compiler to compile the library and the program including it. In
 particular we suggest to use **NVIDIA HPC SDK (NVHPC)** at least version 21.7 (recommended 25.x).
@@ -139,22 +139,22 @@ for how to generate it).
 
 ### Helper macros
 
-- `MIMMO_GET_PTR()`: if OpenACC is enabled it returns its device pointer, otherwise its host pointer;
-  it is thought to be used inside OpenACC parallel regions.
+- `MIMMO_GET_PTR()`: if the program was compiled with OpenACC it returns the device pointer, otherwise
+  the host pointer of a given dual array; for safety, it should only be used inside OpenACC parallel
+  regions.
 - `MIMMO_PRESENT()`: communicates inside a pragma decorating an OpenACC parallel region that the data
-  of a dual array are already present on device.
+  of a dual array are already present on device; only to be used in OpenACC pragmas.
 
 ## Contributing
 
 Contributions are welcome!
 
-If you find a bug, have an idea for an improvement, or want to add a new feature, feel free to open
-an issue or submit a pull request.
+If you find a bug, have an idea for an improvement, or want to add a new feature, feel free to open an
+issue or submit a pull request.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0.
-See [LICENSE](LICENSE) for details.
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.
 
 If you use this library in your work, please consider citing the repository:
 ````
