@@ -1,9 +1,5 @@
 # MiMMO
 
-**WARNING**: This library is still under development, and many of its features are still to be tested.
-
-**WARNING**: Compilation for GPU is not available with CMake yet, it will be soon.
-
 **MiMMO** (Minimal Memory Manager for Openacc) is a simple, safe, easy to use CPU/GPU memory manager to
 work with OpenACC ([https://www.openacc.org/](https://www.openacc.org/)) in C++.
 
@@ -31,8 +27,23 @@ any time.
 ## Requirements
 
 - **CMake**: at least version 3.15
-- **NVIDIA HPC SDK (NVHPC)**: at least version 21.7 (25.x recommended)
+- **Compiler supporting C++17**: recommended **NVIDIA HPC SDK (NVHPC)** version 25.x
 - **Doxygen** (optional: required to generate API documentation)
+
+### Notes on compiler
+
+While the library is thought to be used inside OpenACC programs, it is not required to have GPU support
+in its compilation phase.
+
+In fact, all parts of the library involving OpenACC calls are header-only; i.e. to use them with GPU
+capabilities you only need to link OpenACC while compiling your own program.
+
+The only part of the library that is compiled differently depending on whether OpenACC is enabled or not
+are the tests. If you are using a compiler that does not support OpenACC, please disable the tests
+(using `-DUNIT_TESTS=OFF`) or compile them without GPU support (using `-DOPENACC=OFF`).
+
+In any case, we suggest to use the same compiler to compile the library and the program including it. In
+particular we suggest to use **NVIDIA HPC SDK (NVHPC)** at least version 21.7 (recommended 25.x).
 
 ## Building and Testing
 
@@ -55,8 +66,8 @@ To build the library and run tests, follow these steps:
    Notice:
    - Testing is enabled by default. If you want to avoid Catch2 overhead in the building phase, you can
    disable tests by adding `-DUNIT_TESTS=OFF` to the `cmake -S . -B build` command.
-   - OpenACC is enabled by default. If you want to disable it, you can add `-DOPENACC=OFF` to the
-   `cmake -S . -B build` command.
+   - OpenACC in tests is enabled by default. If you want to disable it, you can add `-DOPENACC=OFF` to
+   the `cmake -S . -B build` command.
 
 3. (Optional) Run the tests:
    ```bash
