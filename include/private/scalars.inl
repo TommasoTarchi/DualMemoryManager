@@ -11,8 +11,9 @@ namespace MiMMO {
 // todo: add memory tracking
 // todo: add description
 template <typename T>
-DualScalar<T> create_scalar(const std::string label, const T value,
-                            const bool on_device) {
+DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
+                                               const T value,
+                                               const bool on_device) {
   DualScalar<T> dual_scalar;
 
   /* define value on host */
@@ -48,16 +49,17 @@ DualScalar<T> create_scalar(const std::string label, const T value,
 
 // TODO: add description
 template <typename T>
-void update_scalar_value(DualScalar<T> &dual_scalar, const int value,
-                         const bool on_device) {
+void DualMemoryManager::update_scalar_value(DualScalar<T> &dual_scalar,
+                                            const T value,
+                                            const bool on_device) {
   /* update host value */
   dual_scalar.host_value = value;
 
 #ifdef _OPENACC
   if (on_device) {
     /* check that device pointer is initialized */
-    if (dual_array.dev_ptr == nullptr)
-      abort_manager(dual_array.label + "'s device pointer is a null pointer.");
+    if (dual_scalar.dev_ptr == nullptr)
+      abort_manager(dual_scalar.label + "'s device pointer is a null pointer.");
 
     /* copy data from host to device */
     acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),

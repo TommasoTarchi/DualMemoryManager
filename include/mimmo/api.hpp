@@ -143,7 +143,7 @@ public:
 
   // TODO: add description
   template <typename T>
-  void update_scalar_value(DualScalar<T> &dual_scalar, const int value,
+  void update_scalar_value(DualScalar<T> &dual_scalar, const T value,
                            const bool on_device = false);
 
   // TODO: add description
@@ -195,14 +195,14 @@ public:
 #define MIMMO_GET_PTR(x) x.dev_ptr
 #else
 #define MIMMO_GET_PTR(x) x.host_ptr
-#endif
+#endif // _OPENACC
 
 // TODO: add description
 #ifdef _OPENACC
 #define MIMMO_GET_VALUE(x) *x.dev_ptr
 #else
 #define MIMMO_GET_VALUE(x) x.host_value
-#endif
+#endif // _OPENACC
 
 /**
  * @brief Communicates in an OpenACC pragma that a dual array or scalar is
@@ -230,7 +230,7 @@ public:
 #define MIMMO_PRESENT(x) copy(x) deviceptr(x.dev_ptr)
 #else
 #define MIMMO_PRESENT(x) ()
-#endif
+#endif // _OPENACC
 
 /* include of templated methods definitions */
 
