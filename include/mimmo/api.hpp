@@ -33,6 +33,13 @@ template <typename T> struct DualArray {
   size_t size_bytes; /*!< size in bytes of the array */
 };
 
+// TODO: add description
+template <typename T> struct DualScalar {
+  T host_value;      /*!< value on host */
+  T *dev_ptr;        /*!< pointer to value on device */
+  std::string label; /*!< label for memory tracker */
+};
+
 /**
  * @brief Class for host-device memory management.
  *
@@ -76,8 +83,8 @@ public:
    * @return Allocated array in the form of an object of type DualArray.
    */
   template <typename T>
-  DualArray<T> allocate(const std::string label, const size_t size,
-                        const bool on_device = false);
+  DualArray<T> alloc_array(const std::string label, const size_t size,
+                           const bool on_device = false);
 
   /**
    * @brief Copies data from host to device.
@@ -92,8 +99,8 @@ public:
    * @param num_elements Number of elements to be copied.
    */
   template <typename T>
-  void copy_host_to_device(DualArray<T> dual_array, const size_t offset,
-                           const size_t num_elements);
+  void update_array_host_to_device(DualArray<T> dual_array, const size_t offset,
+                                   const size_t num_elements);
 
   /**
    * @brief Copies data from device to host.
@@ -108,8 +115,8 @@ public:
    * @param num_elements Number of elements to be copied.
    */
   template <typename T>
-  void copy_device_to_host(DualArray<T> dual_array, const size_t offset,
-                           const size_t num_elements);
+  void update_array_device_to_host(DualArray<T> dual_array, const size_t offset,
+                                   const size_t num_elements);
 
   /**
    * @brief Frees memory allocated for a given dual array.
@@ -122,7 +129,15 @@ public:
    *
    * @param dual_array Dual array to be freed.
    */
-  template <typename T> void free(DualArray<T> &dual_array);
+  template <typename T> void free_array(DualArray<T> &dual_array);
+
+  // TODO: add description
+  template <typename T>
+  DualScalar<T> create_scalar(const std::string label, const T value,
+                              const bool on_device = false);
+
+  // TODO: add description
+  template <typename T> void destroy_scalar(DualScalar<T> &dual_scalar);
 
   /**
    * @brief Returns the total host and device memory allocated by
@@ -202,6 +217,5 @@ public:
 
 /* include of templated methods definitions */
 
-#include "../private/allocate.inl"
-#include "../private/copy.inl"
-#include "../private/free.inl"
+#include "../private/arrays.inl"
+#include "../private/scalars.inl"

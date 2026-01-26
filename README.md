@@ -115,14 +115,19 @@ for how to generate it).
   - `size`: number of elements in array;
   - `size_bytes`: size of array in bytes.
 
+- `DualScalar`: dual scalar data structure; it contains the following fields:
+  - `host_value`: value on host;
+  - `dev_ptr`: pointer to allocated memory on device;
+  - `label`: label used to track dual scalar memory;
+
 ### Classes
 
 - `DualMemoryManager`: memory manager that can be used to manage dual arrays; the following methods
   are currently available:
-  - `allocate()`: allocates the requested memory on host and (optionally) on device;
-  - `copy_host_to_device()`: copies the array data from host to device;
-  - `copy_device_to_host()`: copies the array data from device to host;
-  - `free()`: frees both host and device memory;
+  - `alloc_array()`: allocates the requested memory on host and (optionally) on device;
+  - `update_array_host_to_device()`: copies the array data from host to device;
+  - `update_array_device_to_host()`: copies the array data from device to host;
+  - `free_array()`: frees both host and device memory of an array;
   - `return_total_memory_usage()`: returns the total amount of memory used on host and device;
   - `report_memory_usage()`: prints a report of memory usage for both host and device.
 

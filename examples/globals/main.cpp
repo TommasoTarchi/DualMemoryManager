@@ -17,14 +17,15 @@ int main() {
 
   /* allocate memory for global array */
   global_array =
-      memory_manager.allocate<int>("global_array", global_array_size, true);
+      memory_manager.alloc_array<int>("global_array", global_array_size, true);
 
   /* initialize array on host */
   for (int i = 0; i < global_array_size; i++)
     global_array.host_ptr[i] = i;
 
   /* copy array to device */
-  memory_manager.copy_host_to_device(global_array, 0, global_array.size);
+  memory_manager.update_array_host_to_device(global_array, 0,
+                                             global_array.size);
 
   /* perform calculation on device */
 #pragma acc parallel MIMMO_PRESENT(global_array) default(none)
@@ -35,7 +36,8 @@ int main() {
   }
 
   /* copy data back to host */
-  memory_manager.copy_device_to_host(global_array, 0, global_array.size);
+  memory_manager.update_array_device_to_host(global_array, 0,
+                                             global_array.size);
 
   /* print final results */
   std::cout << "Result array:  [";
@@ -46,7 +48,7 @@ int main() {
   std::cout << std::endl;
 
   /* free global array */
-  memory_manager.free(global_array);
+  memory_manager.free_array(global_array);
 
   return 0;
 }

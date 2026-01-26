@@ -26,26 +26,26 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
   const size_t second_size = 20 * sizeof(float);
 
   MiMMO::DualArray<int> first_test_array =
-      memory_manager.allocate<int>("first_test_array", 10, true);
+      memory_manager.alloc_array<int>("first_test_array", 10, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
       memory_manager.return_total_memory_usage();
 
   MiMMO::DualArray<float> second_test_array =
-      memory_manager.allocate<float>("second_test_array", 20, false);
+      memory_manager.alloc_array<float>("second_test_array", 20, false);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(first_test_array);
+  memory_manager.free_array(first_test_array);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_3 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(second_test_array);
+  memory_manager.free_array(second_test_array);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_4 =
@@ -78,13 +78,13 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
   const size_t size = 10 * sizeof(test_struct);
 
   MiMMO::DualArray<test_struct> test_array =
-      memory_manager.allocate<test_struct>("test_array", 10, true);
+      memory_manager.alloc_array<test_struct>("test_array", 10, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
@@ -106,7 +106,7 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 10, true);
+      memory_manager.alloc_array<int>("test_array", 10, true);
 
   const int *ref_ptr_dev = test_array.dev_ptr;
   const int *ref_ptr_host = test_array.host_ptr;
@@ -118,7 +118,7 @@ TEST_CASE("Pointer selection", "[mimmo]") {
   REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
 #endif // _OPENACC
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 }
 
 /**
@@ -128,16 +128,16 @@ TEST_CASE("Memcopy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
   MiMMO::DualArray<int> test_array_copy =
-      memory_manager.allocate<int>("test_array_copy", 5, true);
+      memory_manager.alloc_array<int>("test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
     test_array_copy.host_ptr[i] = i;
   }
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
 #pragma acc parallel deviceptr(test_array.dev_ptr)
   {
@@ -146,7 +146,7 @@ TEST_CASE("Memcopy", "[mimmo]") {
       MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, test_array.size);
+  memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
 
   REQUIRE(((test_array.host_ptr[0] == test_array_copy.host_ptr[0] * 10) &&
            (test_array.host_ptr[1] == test_array_copy.host_ptr[1] * 10) &&
@@ -154,7 +154,7 @@ TEST_CASE("Memcopy", "[mimmo]") {
            (test_array.host_ptr[3] == test_array_copy.host_ptr[3] * 10) &&
            (test_array.host_ptr[4] == test_array_copy.host_ptr[4] * 10)));
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 }
 
 /**
@@ -164,16 +164,16 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
   MiMMO::DualArray<int> test_array_copy =
-      memory_manager.allocate<int>("test_array_copy", 5, true);
+      memory_manager.alloc_array<int>("test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
     test_array_copy.host_ptr[i] = i;
   }
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
 #pragma acc parallel deviceptr(test_array.dev_ptr)
   {
@@ -182,7 +182,7 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
       MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, 3);
+  memory_manager.update_array_device_to_host(test_array, 0, 3);
 
 #ifdef _OPENACC
   REQUIRE(((test_array.host_ptr[0] == test_array_copy.host_ptr[0] * 10) &&
@@ -198,7 +198,7 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
            (test_array.host_ptr[4] == test_array_copy.host_ptr[4] * 10)));
 #endif // _OPENACC
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 }
 
 /**
@@ -208,12 +208,12 @@ TEST_CASE("Present macro test", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] = i;
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] += 1;
@@ -225,7 +225,7 @@ TEST_CASE("Present macro test", "[mimmo]") {
       MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, test_array.size);
+  memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
 
 #ifdef _OPENACC
   REQUIRE((test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
@@ -237,5 +237,5 @@ TEST_CASE("Present macro test", "[mimmo]") {
            test_array.host_ptr[4] == 50));
 #endif // _OPENACC
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 }
