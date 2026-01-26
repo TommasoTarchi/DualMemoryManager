@@ -15,9 +15,9 @@ struct test_struct {
   int second_field;
 };
 
+// TODO: add scalars
 /**
- * @brief Memory manager test using basic types ('int' and 'float') with GPU
- * support.
+ * @brief Memory manager test using basic types.
  */
 TEST_CASE("Memory manager - base types", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -69,8 +69,9 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
 #endif // _OPENACC
 }
 
+// TODO: add scalars
 /**
- * @brief Memory manager test using test struct with GPU support.
+ * @brief Memory manager test using test struct.
  */
 TEST_CASE("Memory manager - struct", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -97,28 +98,6 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
   REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == 0 &&
            tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
 #endif // _OPENACC
-}
-
-/**
- * @brief Pointer selection macro test with GPU support.
- */
-TEST_CASE("Pointer selection", "[mimmo]") {
-  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
-
-  MiMMO::DualArray<int> test_array =
-      memory_manager.alloc_array<int>("test_array", 10, true);
-
-  const int *ref_ptr_dev = test_array.dev_ptr;
-  const int *ref_ptr_host = test_array.host_ptr;
-  const int *test_ptr = MIMMO_GET_PTR(test_array);
-
-#ifdef _OPENACC
-  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
-#else
-  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
-#endif // _OPENACC
-
-  memory_manager.free_array(test_array);
 }
 
 /**
@@ -199,6 +178,90 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
 #endif // _OPENACC
 
   memory_manager.free_array(test_array);
+}
+
+/**
+ * @brief Scalar value update test.
+ */
+TEST_CASE("Scalar value update", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualScalar<int> test_scalar =
+      memory_manager.create_scalar<int>("test_scalar", 100, true);
+
+  const int test_value_host_1 = test_scalar.host_value;
+#ifdef _OPENACC
+  const int test_value_dev_1 = *test_scalar.dev_ptr;
+#endif // _OPENACC
+
+  memory_manager.update_scalar_value(test_scalar, 200, false);
+
+  const int test_value_host_2 = test_scalar.host_value;
+#ifdef _OPENACC
+  const int test_value_dev_2 = *test_scalar.dev_ptr;
+#endif // _OPENACC
+
+  memory_manager.update_scalar_value(test_scalar, 200, true);
+
+  const int test_value_host_3 = test_scalar.host_value;
+#ifdef _OPENACC
+  const int test_value_dev_3 = *test_scalar.dev_ptr;
+#endif // _OPENACC
+
+#ifdef _OPENACC
+  REQUIRE((test_value_host_1 == 100 && test_value_dev_1 == 100 &&
+           test_value_host_2 == 200 && test_value_dev_2 == 100 &&
+           test_value_host_3 == 200 && test_value_dev_3 == 200));
+#else
+  REQUIRE((test_value_host_1 == 100 && test_value_host_2 == 200 &&
+           test_value_host_3 == 200));
+#endif // _OPENACC
+
+  memory_manager.destroy_scalar(test_scalar);
+}
+
+/**
+ * @brief Pointer selection macro test.
+ */
+TEST_CASE("Pointer selection macro", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualArray<int> test_array =
+      memory_manager.alloc_array<int>("test_array", 10, true);
+
+  const int *ref_ptr_dev = test_array.dev_ptr;
+  const int *ref_ptr_host = test_array.host_ptr;
+  const int *test_ptr = MIMMO_GET_PTR(test_array);
+
+#ifdef _OPENACC
+  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+#else
+  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+#endif // _OPENACC
+
+  memory_manager.free_array(test_array);
+}
+
+/**
+ * @brief Scalar value selection macro.
+ */
+TEST_CASE("Value selection macro", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualScalar<int> test_scalar =
+      memory_manager.create_scalar<int>("test_scalar", 100, true);
+
+  const int *ref_ptr_dev = test_scalar.dev_ptr;
+  const int *ref_ptr_host = &test_scalar.host_value;
+  const int *test_ptr = &(MIMMO_GET_VALUE(test_scalar));
+
+#ifdef _OPENACC
+  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+#else
+  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+#endif // _OPENACC
+
+  memory_manager.destroy_scalar(test_scalar);
 }
 
 /**

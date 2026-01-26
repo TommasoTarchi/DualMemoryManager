@@ -78,7 +78,8 @@ public:
    *                  memory.
    * @param size      Number of elements in the array.
    * @param on_device Whether the array should be allocated on device as
-   *                  well.
+   *                  well (ignored if main code compiled without OpenACC
+   *                  support).
    *
    * @return Allocated array in the form of an object of type DualArray.
    */
@@ -93,6 +94,8 @@ public:
    * This function copies data from host to device for a given dual array.
    *
    * The array must have been previously allocated on both host and device.
+   *
+   * **Warning**: if OpenACC is not enabled, this function does nothing.
    *
    * @param dual_array   Dual array to synchronize.
    * @param offset       Index of first element to be copied.
@@ -109,6 +112,8 @@ public:
    * This function copies data from device to host for a given dual array.
    *
    * The array must have been previously allocated on both host and device.
+   *
+   * **Warning**: if OpenACC is not enabled, this function does nothing.
    *
    * @param dual_array   Dual array to synchronize.
    * @param offset       Index of first element to be copied.
@@ -138,7 +143,8 @@ public:
 
   // TODO: add description
   template <typename T>
-  void update_scalar_value(DualScalar<T> &dual_scalar, const int value);
+  void update_scalar_value(DualScalar<T> &dual_scalar, const int value,
+                           const bool on_device = false);
 
   // TODO: add description
   template <typename T> void destroy_scalar(DualScalar<T> &dual_scalar);

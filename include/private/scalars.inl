@@ -48,14 +48,21 @@ DualScalar<T> create_scalar(const std::string label, const T value,
 
 // TODO: add description
 template <typename T>
-void update_scalar_value(DualScalar<T> &dual_scalar, const int value) {
+void update_scalar_value(DualScalar<T> &dual_scalar, const int value,
+                         const bool on_device) {
   /* update host value */
   dual_scalar.host_value = value;
 
-  /* copy data from host to device */
 #ifdef _OPENACC
-  acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),
-                       sizeof(T));
+  if (on_device) {
+    /* check that device pointer is initialized */
+    if (dual_array.dev_ptr == nullptr)
+      abort_manager(dual_array.label + "'s device pointer is a null pointer.");
+
+    /* copy data from host to device */
+    acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),
+                         sizeof(T));
+  }
 #endif // _OPENACC
 
   return;
