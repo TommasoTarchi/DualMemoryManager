@@ -20,7 +20,7 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
   dual_scalar.host_value = value;
 
   /* if required, allocate memory on device */
-#ifdef _openacc
+#ifdef _OPENACC
   if (on_device) {
     dual_scalar.dev_ptr = (T *)acc_malloc(sizeof(T));
 
@@ -33,7 +33,7 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
   }
 #else
   dual_scalar.dev_ptr = nullptr;
-#endif // _openacc
+#endif // _OPENACC
 
   /* copy data from host to device */
 #ifdef _OPENACC

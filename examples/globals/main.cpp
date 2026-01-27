@@ -51,8 +51,9 @@ int main() {
   std::cout << "]";
   std::cout << std::endl;
 
-  /* free global array */
+  /* free global array and destroy global scalar */
   memory_manager.free_array(global_array);
+  memory_manager.destroy_scalar(global_scalar);
 
   return 0;
 }
