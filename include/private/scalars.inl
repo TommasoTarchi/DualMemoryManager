@@ -8,8 +8,8 @@
 
 namespace MiMMO {
 
-// todo: add memory tracking
-// todo: add description
+// TODO: add memory tracking
+// TODO: add description
 template <typename T>
 DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
                                                const T value,
@@ -37,8 +37,9 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
 
   /* copy data from host to device */
 #ifdef _OPENACC
-  acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),
-                       sizeof(T));
+  if (on_device)
+    acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),
+                         sizeof(T));
 #endif // _OPENACC
 
   /* update scalar label */
@@ -49,23 +50,25 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
 
 // TODO: add description
 template <typename T>
-void DualMemoryManager::update_scalar_value(DualScalar<T> &dual_scalar,
-                                            const T value,
-                                            const bool on_device) {
-  /* update host value */
-  dual_scalar.host_value = value;
+void DualMemoryManager::set_scalar_value(DualScalar<T> &dual_scalar,
+                                         const T value, const bool on_device) {
+  if (on_device) {
 
 #ifdef _OPENACC
-  if (on_device) {
     /* check that device pointer is initialized */
     if (dual_scalar.dev_ptr == nullptr)
       abort_manager(dual_scalar.label + "'s device pointer is a null pointer.");
 
     /* copy data from host to device */
-    acc_memcpy_to_device(dual_scalar.dev_ptr, &(dual_scalar.host_value),
-                         sizeof(T));
-  }
+    T value_tmp = value;
+    acc_memcpy_to_device(dual_scalar.dev_ptr, &value_tmp, sizeof(T));
 #endif // _OPENACC
+
+  } else {
+
+    /* update host value */
+    dual_scalar.host_value = value;
+  }
 
   return;
 }

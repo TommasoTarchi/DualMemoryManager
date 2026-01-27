@@ -149,10 +149,12 @@ is usually an overkill, and simple `firstprivate` or `private` clauses should be
   - `update_array_device_to_host()`: copies the array data from device to host;
   - `free_array()`: frees both host and device memory of an array;
   - `create_scalar()`: creates the scalar on host and (optionally) on device;
-  - `update_scalar_value()`: updates the value of the scalar on host and device;
+  - `set_scalar_value()`: safely updates the value of the scalar on host or device (from host);
   - `destroy_scalar()`: destroys the scalar on host and device;
   - `return_total_memory_usage()`: returns the total amount of memory used on host and device;
   - `report_memory_usage()`: prints a report of memory usage for both host and device.
+
+**Warning**: all methods of the `DualMemoryManager` class should be called from the host only.
 
 ### Helper macros
 
@@ -169,8 +171,8 @@ is usually an overkill, and simple `firstprivate` or `private` clauses should be
 `MIMMO_GET_VALUE()` to access dual arrays and dual scalars, respectively. Direct access to fields is
 unsafe and may lead to undefined behavior.
 
-**Notice**: **always** use the `MIMMO_PRESENT()` macro inside OpenACC pragmas to inform the compiler
-that the data is already present on device. This is mandataory for dual scalars too.
+**Notice**: **always** use the `MIMMO_PRESENT()` macro in OpenACC pragmas to inform the compiler that
+the data is already present on device. This is mandatory for dual scalars too.
 
 ## Contributing
 

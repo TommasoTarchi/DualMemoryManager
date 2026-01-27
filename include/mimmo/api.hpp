@@ -143,8 +143,8 @@ public:
 
   // TODO: add description
   template <typename T>
-  void update_scalar_value(DualScalar<T> &dual_scalar, const T value,
-                           const bool on_device = false);
+  void set_scalar_value(DualScalar<T> &dual_scalar, const T value,
+                        const bool on_device = false);
 
   // TODO: add description
   template <typename T> void destroy_scalar(DualScalar<T> &dual_scalar);

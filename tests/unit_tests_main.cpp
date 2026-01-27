@@ -193,21 +193,24 @@ TEST_CASE("Scalar value update", "[mimmo]") {
 
   const int test_value_host_1 = test_scalar.host_value;
 #ifdef _OPENACC
-  const int test_value_dev_1 = *test_scalar.dev_ptr;
+  int test_value_dev_1 = 0;
+  acc_memcpy_from_device(&test_value_dev_1, test_scalar.dev_ptr, sizeof(int));
 #endif // _OPENACC
 
-  memory_manager.update_scalar_value(test_scalar, 200, false);
+  memory_manager.set_scalar_value(test_scalar, 200, false);
 
   const int test_value_host_2 = test_scalar.host_value;
 #ifdef _OPENACC
-  const int test_value_dev_2 = *test_scalar.dev_ptr;
+  int test_value_dev_2 = 0;
+  acc_memcpy_from_device(&test_value_dev_2, test_scalar.dev_ptr, sizeof(int));
 #endif // _OPENACC
 
-  memory_manager.update_scalar_value(test_scalar, 200, true);
+  memory_manager.set_scalar_value(test_scalar, 200, true);
 
   const int test_value_host_3 = test_scalar.host_value;
 #ifdef _OPENACC
-  const int test_value_dev_3 = *test_scalar.dev_ptr;
+  int test_value_dev_3 = 0;
+  acc_memcpy_from_device(&test_value_dev_3, test_scalar.dev_ptr, sizeof(int));
 #endif // _OPENACC
 
 #ifdef _OPENACC
