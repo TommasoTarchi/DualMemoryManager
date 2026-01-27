@@ -17,11 +17,11 @@ int main() {
 
   /* instantiate dual arrays */
   MiMMO::DualArray<int> dual_array_1 =
-      dual_memory_manager.allocate<int>("dual_array_1", DIM, true);
+      dual_memory_manager.alloc_array<int>("dual_array_1", DIM, true);
   MiMMO::DualArray<int> dual_array_2 =
-      dual_memory_manager.allocate<int>("dual_array_2", DIM, true);
+      dual_memory_manager.alloc_array<int>("dual_array_2", DIM, true);
   MiMMO::DualArray<int> dual_array_res =
-      dual_memory_manager.allocate<int>("dual_array_res", DIM, true);
+      dual_memory_manager.alloc_array<int>("dual_array_res", DIM, true);
 
   /* print memory usage report */
   dual_memory_manager.report_memory_usage();
@@ -33,8 +33,10 @@ int main() {
   }
 
   /* copy needed data to device */
-  dual_memory_manager.copy_host_to_device(dual_array_1, 0, dual_array_1.size);
-  dual_memory_manager.copy_host_to_device(dual_array_2, 0, dual_array_2.size);
+  dual_memory_manager.update_array_host_to_device(dual_array_1, 0,
+                                                  dual_array_1.size);
+  dual_memory_manager.update_array_host_to_device(dual_array_2, 0,
+                                                  dual_array_2.size);
 
   /* OpenACC compute region */
 #pragma acc parallel MIMMO_PRESENT(dual_array_1) MIMMO_PRESENT(dual_array_2)   \
@@ -48,8 +50,13 @@ int main() {
   }
 
   /* copy result to host */
+<<<<<<< HEAD
+  dual_memory_manager.update_array_device_to_host(dual_array_res, 0,
+                                                  dual_array_res.size);
+=======
   dual_memory_manager.copy_device_to_host(dual_array_res, 0,
                                           dual_array_res.size);
+>>>>>>> main
 
   /* print results of operation */
   std::cout << "Result array:  [";
@@ -60,9 +67,9 @@ int main() {
   std::cout << std::endl;
 
   /* free dual array memory */
-  dual_memory_manager.free(dual_array_1);
-  dual_memory_manager.free(dual_array_2);
-  dual_memory_manager.free(dual_array_res);
+  dual_memory_manager.free_array(dual_array_1);
+  dual_memory_manager.free_array(dual_array_2);
+  dual_memory_manager.free_array(dual_array_res);
 
   return 0;
 }

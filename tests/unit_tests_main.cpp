@@ -16,8 +16,7 @@ struct test_struct {
 };
 
 /**
- * @brief Memory manager test using basic types ('int' and 'float') with GPU
- * support.
+ * @brief Memory manager test using basic types.
  */
 TEST_CASE("Memory manager - base types", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -26,51 +25,60 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
   const size_t second_size = 20 * sizeof(float);
 
   MiMMO::DualArray<int> first_test_array =
-      memory_manager.allocate<int>("first_test_array", 10, true);
+      memory_manager.alloc_array<int>("first_test_array", 10, true);
+  MiMMO::DualScalar<int> first_test_scalar =
+      memory_manager.create_scalar<int>("first_test_scalar", 3.14f, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
       memory_manager.return_total_memory_usage();
 
   MiMMO::DualArray<float> second_test_array =
-      memory_manager.allocate<float>("second_test_array", 20, false);
+      memory_manager.alloc_array<float>("second_test_array", 20, false);
+  MiMMO::DualScalar<float> second_test_scalar =
+      memory_manager.create_scalar<float>("second_test_scalar", 3.14f, false);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(first_test_array);
+  memory_manager.free_array(first_test_array);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_3 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(second_test_array);
+  memory_manager.free_array(second_test_array);
+  memory_manager.destroy_scalar(first_test_scalar);
+  memory_manager.destroy_scalar(second_test_scalar);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_4 =
       memory_manager.return_total_memory_usage();
 
 #ifdef _OPENACC
-  REQUIRE((tot_mem_usage_1.first == first_size &&
-           tot_mem_usage_1.second == first_size &&
-           tot_mem_usage_2.first == (first_size + second_size) &&
-           tot_mem_usage_2.second == first_size &&
-           tot_mem_usage_3.first == second_size &&
-           tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
-           tot_mem_usage_4.second == 0));
+  REQUIRE((tot_mem_usage_1.first == first_size + sizeof(int) &&
+           tot_mem_usage_1.second == first_size + sizeof(int) &&
+           tot_mem_usage_2.first ==
+               first_size + second_size + sizeof(int) + sizeof(float) &&
+           tot_mem_usage_2.second == first_size + sizeof(int) &&
+           tot_mem_usage_3.first == second_size + sizeof(int) + sizeof(float) &&
+           tot_mem_usage_3.second == sizeof(int) &&
+           tot_mem_usage_4.first == 0 && tot_mem_usage_4.second == 0));
 #else
-  REQUIRE((tot_mem_usage_1.first == first_size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == (first_size + second_size) &&
+  REQUIRE((tot_mem_usage_1.first == first_size + sizeof(int) &&
+           tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first ==
+               first_size + second_size + sizeof(int) + sizeof(float) &&
            tot_mem_usage_2.second == 0 &&
-           tot_mem_usage_3.first == second_size &&
+           tot_mem_usage_3.first == second_size + sizeof(int) + sizeof(float) &&
            tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
            tot_mem_usage_4.second == 0));
 #endif // _OPENACC
 }
 
 /**
- * @brief Memory manager test using test struct with GPU support.
+ * @brief Memory manager test using test struct.
  */
 TEST_CASE("Memory manager - struct", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
@@ -78,47 +86,39 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
   const size_t size = 10 * sizeof(test_struct);
 
   MiMMO::DualArray<test_struct> test_array =
-      memory_manager.allocate<test_struct>("test_array", 10, true);
+      memory_manager.alloc_array<test_struct>("test_array", 10, true);
+  MiMMO::DualScalar<test_struct> test_scalar =
+      memory_manager.create_scalar<test_struct>("test_scalar", {1.0, 2}, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
       memory_manager.return_total_memory_usage();
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
       memory_manager.return_total_memory_usage();
 
-#ifdef _OPENACC
-  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == size &&
-           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
-#else
-  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
-#endif // _OPENACC
-}
+  memory_manager.destroy_scalar(test_scalar);
 
-/**
- * @brief Pointer selection macro test with GPU support.
- */
-TEST_CASE("Pointer selection", "[mimmo]") {
-  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
-
-  MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 10, true);
-
-  const int *ref_ptr_dev = test_array.dev_ptr;
-  const int *ref_ptr_host = test_array.host_ptr;
-  const int *test_ptr = MIMMO_GET_PTR(test_array);
+  memory_manager.report_memory_usage();
+  const std::pair<size_t, size_t> tot_mem_usage_3 =
+      memory_manager.return_total_memory_usage();
 
 #ifdef _OPENACC
-  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+  REQUIRE((tot_mem_usage_1.first == size + sizeof(test_struct) &&
+           tot_mem_usage_1.second == size + sizeof(test_struct) &&
+           tot_mem_usage_2.first == sizeof(test_struct) &&
+           tot_mem_usage_2.second == sizeof(test_struct) &&
+           tot_mem_usage_3.first == 0 && tot_mem_usage_3.second == 0));
 #else
-  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+  REQUIRE((tot_mem_usage_1.first == size + sizeof(test_struct) &&
+           tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first == sizeof(test_struct) &&
+           tot_mem_usage_2.second == 0 && tot_mem_usage_3.first == 0 &&
+           tot_mem_usage_3.second == 0));
 #endif // _OPENACC
-
-  memory_manager.free(test_array);
 }
 
 /**
@@ -128,16 +128,16 @@ TEST_CASE("Memcopy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
   MiMMO::DualArray<int> test_array_copy =
-      memory_manager.allocate<int>("test_array_copy", 5, true);
+      memory_manager.alloc_array<int>("test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
     test_array_copy.host_ptr[i] = i;
   }
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
 #pragma acc parallel deviceptr(test_array.dev_ptr)
   {
@@ -146,7 +146,7 @@ TEST_CASE("Memcopy", "[mimmo]") {
       MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, test_array.size);
+  memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
 
   REQUIRE(((test_array.host_ptr[0] == test_array_copy.host_ptr[0] * 10) &&
            (test_array.host_ptr[1] == test_array_copy.host_ptr[1] * 10) &&
@@ -154,7 +154,8 @@ TEST_CASE("Memcopy", "[mimmo]") {
            (test_array.host_ptr[3] == test_array_copy.host_ptr[3] * 10) &&
            (test_array.host_ptr[4] == test_array_copy.host_ptr[4] * 10)));
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
+  memory_manager.free_array(test_array_copy);
 }
 
 /**
@@ -164,25 +165,25 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
   MiMMO::DualArray<int> test_array_copy =
-      memory_manager.allocate<int>("test_array_copy", 5, true);
+      memory_manager.alloc_array<int>("test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
     test_array_copy.host_ptr[i] = i;
   }
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
-#pragma acc parallel deviceptr(test_array.dev_ptr)
+#pragma acc parallel deviceptr(test_array.dev_ptr) default(none)
   {
 #pragma acc loop
     for (int i = 0; i < 5; i++)
       MIMMO_GET_PTR(test_array)[i] *= 10;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, 3);
+  memory_manager.update_array_device_to_host(test_array, 0, 3);
 
 #ifdef _OPENACC
   REQUIRE(((test_array.host_ptr[0] == test_array_copy.host_ptr[0] * 10) &&
@@ -198,44 +199,142 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
            (test_array.host_ptr[4] == test_array_copy.host_ptr[4] * 10)));
 #endif // _OPENACC
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
+  memory_manager.free_array(test_array_copy);
+}
+
+/**
+ * @brief Scalar value update test.
+ */
+TEST_CASE("Scalar value update", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualScalar<int> test_scalar =
+      memory_manager.create_scalar<int>("test_scalar", 100, true);
+
+  const int test_value_host_1 = test_scalar.host_value;
+#ifdef _OPENACC
+  int test_value_dev_1 = 0;
+  acc_memcpy_from_device(&test_value_dev_1, test_scalar.dev_ptr, sizeof(int));
+#endif // _OPENACC
+
+  test_scalar.host_value = 200;
+
+  const int test_value_host_2 = test_scalar.host_value;
+#ifdef _OPENACC
+  int test_value_dev_2 = 0;
+  acc_memcpy_from_device(&test_value_dev_2, test_scalar.dev_ptr, sizeof(int));
+#endif // _OPENACC
+
+  memory_manager.update_scalar_host_to_device(test_scalar);
+
+  const int test_value_host_3 = test_scalar.host_value;
+#ifdef _OPENACC
+  int test_value_dev_3 = 0;
+  acc_memcpy_from_device(&test_value_dev_3, test_scalar.dev_ptr, sizeof(int));
+#endif // _OPENACC
+
+#ifdef _OPENACC
+  REQUIRE((test_value_host_1 == 100 && test_value_dev_1 == 100 &&
+           test_value_host_2 == 200 && test_value_dev_2 == 100 &&
+           test_value_host_3 == 200 && test_value_dev_3 == 200));
+#else
+  REQUIRE((test_value_host_1 == 100 && test_value_host_2 == 200 &&
+           test_value_host_3 == 200));
+#endif // _OPENACC
+
+  memory_manager.destroy_scalar(test_scalar);
+}
+
+/**
+ * @brief Pointer selection macro test.
+ */
+TEST_CASE("Pointer selection macro", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualArray<int> test_array =
+      memory_manager.alloc_array<int>("test_array", 10, true);
+
+  const int *ref_ptr_dev = test_array.dev_ptr;
+  const int *ref_ptr_host = test_array.host_ptr;
+  const int *test_ptr = MIMMO_GET_PTR(test_array);
+
+#ifdef _OPENACC
+  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+#else
+  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+#endif // _OPENACC
+
+  memory_manager.free_array(test_array);
+}
+
+/**
+ * @brief Scalar value selection macro.
+ */
+TEST_CASE("Value selection macro", "[mimmo]") {
+  MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
+
+  MiMMO::DualScalar<int> test_scalar =
+      memory_manager.create_scalar<int>("test_scalar", 100, true);
+
+  const int *ref_ptr_dev = test_scalar.dev_ptr;
+  const int *ref_ptr_host = &test_scalar.host_value;
+  const int *test_ptr = &(MIMMO_GET_VALUE(test_scalar));
+
+#ifdef _OPENACC
+  REQUIRE((ref_ptr_dev == test_ptr && ref_ptr_host != test_ptr));
+#else
+  REQUIRE((ref_ptr_dev == nullptr && ref_ptr_host == test_ptr));
+#endif // _OPENACC
+
+  memory_manager.destroy_scalar(test_scalar);
 }
 
 /**
  * @brief Present macro test for OpenACC pragmas.
  */
-TEST_CASE("Present macro test", "[mimmo]") {
+TEST_CASE("Present macro", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
-      memory_manager.allocate<int>("test_array", 5, true);
+      memory_manager.alloc_array<int>("test_array", 5, true);
+  MiMMO::DualScalar<int> test_scalar =
+      memory_manager.create_scalar<int>("test_scalar", 10, true);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] = i;
 
-  memory_manager.copy_host_to_device(test_array, 0, test_array.size);
+  memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] += 1;
 
-#pragma acc parallel MIMMO_PRESENT(test_array)
+#pragma acc parallel MIMMO_PRESENT(test_array)                                 \
+    MIMMO_PRESENT(test_scalar) default(none)
   {
 #pragma acc loop
     for (int i = 0; i < test_array.size; i++)
-      MIMMO_GET_PTR(test_array)[i] *= 10;
+      MIMMO_GET_PTR(test_array)[i] *= MIMMO_GET_VALUE(test_scalar);
+
+    MIMMO_GET_VALUE(test_scalar) += 5;
   }
 
-  memory_manager.copy_device_to_host(test_array, 0, test_array.size);
+  test_scalar.host_value += 5;
+
+  memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
+
+  memory_manager.update_scalar_device_to_host(test_scalar);
 
 #ifdef _OPENACC
   REQUIRE((test_array.host_ptr[0] == 0 && test_array.host_ptr[1] == 10 &&
            test_array.host_ptr[2] == 20 && test_array.host_ptr[3] == 30 &&
-           test_array.host_ptr[4] == 40));
+           test_array.host_ptr[4] == 40 && test_scalar.host_value == 15));
 #else
   REQUIRE((test_array.host_ptr[0] == 10 && test_array.host_ptr[1] == 20 &&
            test_array.host_ptr[2] == 30 && test_array.host_ptr[3] == 40 &&
-           test_array.host_ptr[4] == 50));
+           test_array.host_ptr[4] == 50 && test_scalar.host_value == 20));
 #endif // _OPENACC
 
-  memory_manager.free(test_array);
+  memory_manager.free_array(test_array);
+  memory_manager.destroy_scalar(test_scalar);
 }
