@@ -272,7 +272,7 @@ TEST_CASE("Value selection macro", "[mimmo]") {
 /**
  * @brief Present macro test for OpenACC pragmas.
  */
-TEST_CASE("Present macro test", "[mimmo]") {
+TEST_CASE("Present macro", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
   MiMMO::DualArray<int> test_array =
@@ -288,8 +288,6 @@ TEST_CASE("Present macro test", "[mimmo]") {
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] += 1;
 
-  test_scalar.host_value += 5;
-
 #pragma acc parallel MIMMO_PRESENT(test_array)                                 \
     MIMMO_PRESENT(test_scalar) default(none)
   {
@@ -299,6 +297,8 @@ TEST_CASE("Present macro test", "[mimmo]") {
 
     MIMMO_GET_VALUE(test_scalar) += 5;
   }
+
+  test_scalar.host_value += 5;
 
   memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
 
@@ -315,4 +315,5 @@ TEST_CASE("Present macro test", "[mimmo]") {
 #endif // _OPENACC
 
   memory_manager.free_array(test_array);
+  memory_manager.destroy_scalar(test_scalar);
 }
