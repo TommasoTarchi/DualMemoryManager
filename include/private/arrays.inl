@@ -45,7 +45,7 @@ DualArray<T> DualMemoryManager::alloc_array(const std::string label,
     if (!(dual_array.dev_ptr)) {
       std::free(dual_array.host_ptr);
       dual_array.host_ptr = nullptr;
-      abort_manager("Failed to allocate device memory.");
+      abort_mimmo("Failed to allocate device memory.");
     }
 
   } else {
@@ -76,7 +76,7 @@ DualArray<T> DualMemoryManager::alloc_array(const std::string label,
 #endif // _OPENACC
 
   if (ret)
-    abort_manager(label + " already exists. Please choose another label.");
+    abort_mimmo(label + " already exists. Please choose another label.");
 
   return dual_array;
 }
@@ -101,12 +101,12 @@ void DualMemoryManager::update_array_host_to_device(DualArray<T> dual_array,
                                                     const size_t num_elements) {
   /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
-    abort_manager(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
 
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_array.dev_ptr == nullptr)
-    abort_manager(dual_array.label + "'s device pointer is a null pointer.");
+    abort_mimmo(dual_array.label + "'s device pointer is a null pointer.");
 
   /* copy data from host to device */
   acc_memcpy_to_device(dual_array.dev_ptr + offset,
@@ -136,12 +136,12 @@ void DualMemoryManager::update_array_device_to_host(DualArray<T> dual_array,
                                                     const size_t num_elements) {
   /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
-    abort_manager(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
 
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_array.dev_ptr == nullptr)
-    abort_manager(dual_array.label + "'s device pointer is a null pointer.");
+    abort_mimmo(dual_array.label + "'s device pointer is a null pointer.");
 
   /* copy data from device to host */
   acc_memcpy_from_device(dual_array.host_ptr + offset,
@@ -166,7 +166,7 @@ template <typename T>
 void DualMemoryManager::free_array(DualArray<T> &dual_array) {
   /* check that host pointer is not null */
   if (dual_array.host_ptr == nullptr) {
-    abort_manager(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
   }
 
   /* check that array was actually recorded and update memory
@@ -174,7 +174,7 @@ void DualMemoryManager::free_array(DualArray<T> &dual_array) {
    * */
   const bool ret = remove_from_memory_tracker(memory_tracker, dual_array.label);
   if (ret) {
-    abort_manager(dual_array.label + " was not found by memory manager.");
+    abort_mimmo(dual_array.label + " was not found by memory manager.");
   }
 
   /* free memory on host */

@@ -1,10 +1,10 @@
 /**
- * @file abort_manager.cpp
+ * @file abort.cpp
  *
  * @brief Implementation of functions for aborting the memory manager.
  */
 
-#include "../include/private/abort_manager.hpp"
+#include "../include/private/abort.hpp"
 #include <iostream>
 
 namespace MiMMO {
@@ -19,7 +19,7 @@ namespace MiMMO {
  *
  * @param message Error message to be displayed.
  */
-void abort_manager(const std::string message) {
+void abort_mimmo(const std::string message) {
 
   /* make sure standard output is flushed */
   std::cout.flush();

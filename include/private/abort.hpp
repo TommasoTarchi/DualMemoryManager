@@ -1,5 +1,5 @@
 /**
- * @file abort_manager.hpp
+ * @file abort.hpp
  *
  * @brief Declaration of functions for aborting the memory manager.
  */
@@ -19,6 +19,6 @@ namespace MiMMO {
  *
  * @param message Error message to be displayed.
  */
-void abort_manager(const std::string);
+void abort_mimmo(const std::string);
 
 } // namespace MiMMO

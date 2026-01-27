@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../private/abort_manager.hpp"
+#include "../private/abort.hpp"
 #include "../private/memory_tracker.hpp"
 #ifdef _OPENACC
 #include <openacc.h>

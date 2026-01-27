@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # define shared library with source files
 add_library(MiMMO SHARED
-    src/abort_manager.cpp
+    src/abort.cpp
     src/memory_tracker.cpp
     src/memory_usage.cpp
 )

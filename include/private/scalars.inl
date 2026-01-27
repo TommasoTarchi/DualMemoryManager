@@ -44,7 +44,7 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
     dual_scalar.dev_ptr = (T *)acc_malloc(sizeof(T));
 
     if (!(dual_scalar.dev_ptr)) {
-      abort_manager("Failed to allocate device memory.");
+      abort_mimmo("Failed to allocate device memory.");
     }
 
   } else {
@@ -78,7 +78,7 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
 #endif // _OPENACC
 
   if (ret)
-    abort_manager(label + " already exists. Please choose another label.");
+    abort_mimmo(label + " already exists. Please choose another label.");
 
   return dual_scalar;
 }
@@ -103,7 +103,7 @@ void DualMemoryManager::update_scalar_host_to_device(
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_scalar.dev_ptr == nullptr)
-    abort_manager(dual_scalar.label + "'s device pointer is a null pointer.");
+    abort_mimmo(dual_scalar.label + "'s device pointer is a null pointer.");
 
   /* copy data from host to device */
   acc_memcpy_to_device(dual_scalar.dev_ptr, &dual_scalar.host_value, sizeof(T));
@@ -134,7 +134,7 @@ void DualMemoryManager::update_scalar_device_to_host(
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_scalar.dev_ptr == nullptr)
-    abort_manager(dual_scalar.label + "'s device pointer is a null pointer.");
+    abort_mimmo(dual_scalar.label + "'s device pointer is a null pointer.");
 
   /* copy data from host to device */
   acc_memcpy_from_device(&dual_scalar.host_value, dual_scalar.dev_ptr,
@@ -167,7 +167,7 @@ void DualMemoryManager::destroy_scalar(DualScalar<T> &dual_scalar) {
   const bool ret =
       remove_from_memory_tracker(memory_tracker, dual_scalar.label);
   if (ret) {
-    abort_manager(dual_scalar.label + " was not found by memory manager.");
+    abort_mimmo(dual_scalar.label + " was not found by memory manager.");
   }
 
   /* update total memory used by host */
