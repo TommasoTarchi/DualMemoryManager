@@ -50,8 +50,13 @@ int main() {
   }
 
   /* copy result to host */
+<<<<<<< HEAD
   dual_memory_manager.update_array_device_to_host(dual_array_res, 0,
                                                   dual_array_res.size);
+=======
+  dual_memory_manager.copy_device_to_host(dual_array_res, 0,
+                                          dual_array_res.size);
+>>>>>>> main
 
   /* print results of operation */
   std::cout << "Result array:  [";
