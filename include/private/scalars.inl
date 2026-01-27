@@ -8,7 +8,6 @@
 
 namespace MiMMO {
 
-// TODO: add memory tracking
 /**
  * @brief Creates a dual scalar.
  *
@@ -18,7 +17,7 @@ namespace MiMMO {
  * value. It returns an object of type DualScalar that contains the host
  * value and the device pointer.
  *
- * @tparam T Type of element of variable to be created.
+ * @tparam T        Type of element of variable to be created.
  *
  * @param label     Label that should be used to track the scalar in
  *                  memory.
@@ -27,7 +26,8 @@ namespace MiMMO {
  *                  well (ignored if main code compiled without OpenACC
  *                  support).
  *
- * @return Created variable in the form of an object of type DualScalar.
+ * @return          Created variable in the form of an object of type
+ *                  DualScalar.
  */
 template <typename T>
 DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
@@ -63,6 +63,22 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
 
   /* update scalar label */
   dual_scalar.label = label;
+
+  /* update used memory and memory tracker */
+  total_host_memory += sizeof(T);
+#ifdef _OPENACC
+  if (on_device)
+    total_device_memory += sizeof(T);
+
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, label, sizeof(T), on_device);
+#else
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, label, sizeof(T), false);
+#endif // _OPENACC
+
+  if (ret)
+    abort_manager(label + " already exists. Please choose another label.");
 
   return dual_scalar;
 }
@@ -128,7 +144,6 @@ void DualMemoryManager::update_scalar_device_to_host(
   return;
 }
 
-// TODO: add memory tracking
 /**
  * @brief Frees memory allocated on device for a given scalar.
  *
@@ -136,7 +151,7 @@ void DualMemoryManager::update_scalar_device_to_host(
  * This function frees memory allocated on device for a given dual
  * scalar.
  *
- * If the array is not tracked (i.e. was not allocated using this
+ * If the scalar is not tracked (i.e. was not allocated using this
  * memory manager, or it was already freed), the program aborts.
  *
  * If OpenACC is not enabled, this function does nothing.
@@ -146,13 +161,26 @@ void DualMemoryManager::update_scalar_device_to_host(
 template <typename T>
 void DualMemoryManager::destroy_scalar(DualScalar<T> &dual_scalar) {
 
-  /* free memory on device */
-  if (dual_scalar.dev_ptr != nullptr) {
-#ifdef _OPENACC
-    acc_free(dual_scalar.dev_ptr);
-#endif // _OPENACC
-    dual_scalar.dev_ptr = nullptr;
+  /* check that scalar was actually recorded and update memory
+   * tracker
+   * */
+  const bool ret =
+      remove_from_memory_tracker(memory_tracker, dual_scalar.label);
+  if (ret) {
+    abort_manager(dual_scalar.label + " was not found by memory manager.");
   }
+
+  /* update total memory used by host */
+  total_host_memory -= sizeof(T);
+
+  /* free memory on device and update total memory used by device */
+#ifdef _OPENACC
+  if (dual_scalar.dev_ptr != nullptr) {
+    acc_free(dual_scalar.dev_ptr);
+    dual_scalar.dev_ptr = nullptr;
+    total_device_memory -= sizeof(T);
+  }
+#endif // _OPENACC
 
   return;
 }

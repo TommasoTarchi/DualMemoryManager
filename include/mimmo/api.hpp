@@ -80,7 +80,7 @@ public:
    * for a certain array. It returns an object of type DualArray,
    * containing host and device pointers.
    *
-   * @tparam T Type of elements in array to be allocated.
+   * @tparam T        Type of elements in array to be allocated.
    *
    * @param label     Label that should be used to track the array in
    *                  memory.
@@ -89,7 +89,8 @@ public:
    *                  well (ignored if main code compiled without OpenACC
    *                  support).
    *
-   * @return Allocated array in the form of an object of type DualArray.
+   * @return          Allocated array in the form of an object of type
+   *                  DualArray.
    */
   template <typename T>
   DualArray<T> alloc_array(const std::string label, const size_t size,
@@ -153,7 +154,7 @@ public:
    * value. It returns an object of type DualScalar that contains the host
    * value and the device pointer.
    *
-   * @tparam T Type of element of variable to be created.
+   * @tparam T        Type of element of variable to be created.
    *
    * @param label     Label that should be used to track the scalar in
    *                  memory.
@@ -162,7 +163,8 @@ public:
    *                  well (ignored if main code compiled without OpenACC
    *                  support).
    *
-   * @return Created variable in the form of an object of type DualScalar.
+   * @return          Created variable in the form of an object of type
+   *                  DualScalar.
    */
   template <typename T>
   DualScalar<T> create_scalar(const std::string label, const T value,

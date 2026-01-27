@@ -16,7 +16,7 @@ namespace MiMMO {
  * for a certain array. It returns an object of type DualArray,
  * containing host and device pointers.
  *
- * @tparam T Type of elements in array to be allocated.
+ * @tparam T        Type of elements in array to be allocated.
  *
  * @param label     Label that should be used to track the array in
  *                  memory.
@@ -25,7 +25,8 @@ namespace MiMMO {
  *                  well (ignored if main code compiled without OpenACC
  *                  support).
  *
- * @return Allocated array in the form of an object of type DualArray.
+ * @return          Allocated array in the form of an object of type
+ *                  DualArray.
  */
 template <typename T>
 DualArray<T> DualMemoryManager::alloc_array(const std::string label,
@@ -171,7 +172,7 @@ void DualMemoryManager::free_array(DualArray<T> &dual_array) {
   /* check that array was actually recorded and update memory
    * tracker
    * */
-  bool ret = remove_from_memory_tracker(memory_tracker, dual_array.label);
+  const bool ret = remove_from_memory_tracker(memory_tracker, dual_array.label);
   if (ret) {
     abort_manager(dual_array.label + " was not found by memory manager.");
   }
@@ -182,13 +183,13 @@ void DualMemoryManager::free_array(DualArray<T> &dual_array) {
   total_host_memory -= dual_array.size_bytes;
 
   /* free memory on device */
-  if (dual_array.dev_ptr != nullptr) {
 #ifdef _OPENACC
+  if (dual_array.dev_ptr != nullptr) {
     acc_free(dual_array.dev_ptr);
-#endif // _OPENACC
     dual_array.dev_ptr = nullptr;
     total_device_memory -= dual_array.size_bytes;
   }
+#endif // _OPENACC
 
   return;
 }

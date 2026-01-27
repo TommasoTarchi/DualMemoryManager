@@ -15,7 +15,6 @@ struct test_struct {
   int second_field;
 };
 
-// TODO: add dual scalars
 /**
  * @brief Memory manager test using basic types.
  */
@@ -27,6 +26,8 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
 
   MiMMO::DualArray<int> first_test_array =
       memory_manager.alloc_array<int>("first_test_array", 10, true);
+  MiMMO::DualScalar<int> first_test_scalar =
+      memory_manager.create_scalar<int>("first_test_scalar", 3.14f, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
@@ -34,6 +35,8 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
 
   MiMMO::DualArray<float> second_test_array =
       memory_manager.alloc_array<float>("second_test_array", 20, false);
+  MiMMO::DualScalar<float> second_test_scalar =
+      memory_manager.create_scalar<float>("second_test_scalar", 3.14f, false);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
@@ -46,30 +49,34 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
       memory_manager.return_total_memory_usage();
 
   memory_manager.free_array(second_test_array);
+  memory_manager.destroy_scalar(first_test_scalar);
+  memory_manager.destroy_scalar(second_test_scalar);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_4 =
       memory_manager.return_total_memory_usage();
 
 #ifdef _OPENACC
-  REQUIRE((tot_mem_usage_1.first == first_size &&
-           tot_mem_usage_1.second == first_size &&
-           tot_mem_usage_2.first == (first_size + second_size) &&
-           tot_mem_usage_2.second == first_size &&
-           tot_mem_usage_3.first == second_size &&
-           tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
-           tot_mem_usage_4.second == 0));
+  REQUIRE((tot_mem_usage_1.first == first_size + sizeof(int) &&
+           tot_mem_usage_1.second == first_size + sizeof(int) &&
+           tot_mem_usage_2.first ==
+               first_size + second_size + sizeof(int) + sizeof(float) &&
+           tot_mem_usage_2.second == first_size + sizeof(int) &&
+           tot_mem_usage_3.first == second_size + sizeof(int) + sizeof(float) &&
+           tot_mem_usage_3.second == sizeof(int) &&
+           tot_mem_usage_4.first == 0 && tot_mem_usage_4.second == 0));
 #else
-  REQUIRE((tot_mem_usage_1.first == first_size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == (first_size + second_size) &&
+  REQUIRE((tot_mem_usage_1.first == first_size + sizeof(int) &&
+           tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first ==
+               first_size + second_size + sizeof(int) + sizeof(float) &&
            tot_mem_usage_2.second == 0 &&
-           tot_mem_usage_3.first == second_size &&
+           tot_mem_usage_3.first == second_size + sizeof(int) + sizeof(float) &&
            tot_mem_usage_3.second == 0 && tot_mem_usage_4.first == 0 &&
            tot_mem_usage_4.second == 0));
 #endif // _OPENACC
 }
 
-// TODO: add dual scalars
 /**
  * @brief Memory manager test using test struct.
  */
@@ -80,6 +87,8 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
 
   MiMMO::DualArray<test_struct> test_array =
       memory_manager.alloc_array<test_struct>("test_array", 10, true);
+  MiMMO::DualScalar<test_struct> test_scalar =
+      memory_manager.create_scalar<test_struct>("test_scalar", {1.0, 2}, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
@@ -91,12 +100,24 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
   const std::pair<size_t, size_t> tot_mem_usage_2 =
       memory_manager.return_total_memory_usage();
 
+  memory_manager.destroy_scalar(test_scalar);
+
+  memory_manager.report_memory_usage();
+  const std::pair<size_t, size_t> tot_mem_usage_3 =
+      memory_manager.return_total_memory_usage();
+
 #ifdef _OPENACC
-  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == size &&
-           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
+  REQUIRE((tot_mem_usage_1.first == size + sizeof(test_struct) &&
+           tot_mem_usage_1.second == size + sizeof(test_struct) &&
+           tot_mem_usage_2.first == sizeof(test_struct) &&
+           tot_mem_usage_2.second == sizeof(test_struct) &&
+           tot_mem_usage_3.first == 0 && tot_mem_usage_3.second == 0));
 #else
-  REQUIRE((tot_mem_usage_1.first == size && tot_mem_usage_1.second == 0 &&
-           tot_mem_usage_2.first == 0 && tot_mem_usage_2.second == 0));
+  REQUIRE((tot_mem_usage_1.first == size + sizeof(test_struct) &&
+           tot_mem_usage_1.second == 0 &&
+           tot_mem_usage_2.first == sizeof(test_struct) &&
+           tot_mem_usage_2.second == 0 && tot_mem_usage_3.first == 0 &&
+           tot_mem_usage_3.second == 0));
 #endif // _OPENACC
 }
 
