@@ -2,7 +2,8 @@
  * @file main.cpp
  *
  * @brief Very simple example of scalar product between two arrays performed
- * on device using MiMMO's memory manager.
+ * on device using MiMMO's memory manager. In this version, a subroutine is
+ * used.
  */
 
 #include "mimmo/api.hpp"
@@ -10,6 +11,22 @@
 #include <openacc.h>
 
 #define DIM 10
+
+/* subroutine for scalar product evaluation (done sequentially
+ * for simplicity)
+ * */
+#pragma acc routine seq
+template <typename T>
+void scalar_product(const MiMMO::DualArray<T> dual_array_1,
+                    const MiMMO::DualArray<T> dual_array_2,
+                    const MiMMO::DualArray<T> dual_array_res) {
+
+  for (size_t i = 0; i < dual_array_1.size; i++)
+    MIMMO_GET_PTR(dual_array_res)
+  [i] = MIMMO_GET_PTR(dual_array_1)[i] * MIMMO_GET_PTR(dual_array_2)[i];
+
+  return;
+}
 
 int main() {
   /* instantiate a dual memory manager */
@@ -39,24 +56,19 @@ int main() {
                                                   dual_array_2.size);
 
   /* OpenACC compute region */
-#pragma acc parallel MIMMO_PRESENT(dual_array_1) MIMMO_PRESENT(dual_array_2)   \
+#pragma acc data MIMMO_PRESENT(dual_array_1) MIMMO_PRESENT(dual_array_2)       \
     MIMMO_PRESENT(dual_array_res) default(none)
   {
-    /* perform calculation on device */
-#pragma acc loop
-    for (int i = 0; i < dual_array_1.size; i++)
-      MIMMO_GET_PTR(dual_array_res)
-    [i] = MIMMO_GET_PTR(dual_array_1)[i] * MIMMO_GET_PTR(dual_array_2)[i];
+#pragma acc parallel
+    {
+      /* perform calculation on device */
+      scalar_product(dual_array_1, dual_array_2, dual_array_res);
+    }
   }
 
   /* copy result to host */
-<<<<<<< HEAD
   dual_memory_manager.update_array_device_to_host(dual_array_res, 0,
                                                   dual_array_res.size);
-=======
-  dual_memory_manager.copy_device_to_host(dual_array_res, 0,
-                                          dual_array_res.size);
->>>>>>> main
 
   /* print results of operation */
   std::cout << "Result array:  [";
