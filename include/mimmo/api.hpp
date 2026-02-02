@@ -299,7 +299,7 @@ public:
  * @param x Dual array or scalar present on device.
  */
 #ifdef _OPENACC
-#define MIMMO_PRESENT(x) copy(x) deviceptr(x.dev_ptr)
+#define MIMMO_PRESENT(x) copyin(x) deviceptr(x.dev_ptr)
 #else
 #define MIMMO_PRESENT(x) ()
 #endif // _OPENACC

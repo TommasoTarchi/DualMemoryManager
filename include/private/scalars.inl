@@ -96,7 +96,7 @@ void DualMemoryManager::update_scalar_host_to_device(
     abort_mimmo("Device pointer of dual scalar is a null pointer.");
 
   /* copy data from host to device */
-  acc_memcpy_to_device(dual_scalar.dev_ptr, (void *)&dual_scalar, sizeof(T));
+  acc_memcpy_to_device(dual_scalar.dev_ptr, &dual_scalar.host_value, sizeof(T));
 #endif // _OPENACC
 
   return;

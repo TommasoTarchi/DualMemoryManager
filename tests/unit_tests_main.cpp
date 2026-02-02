@@ -140,7 +140,8 @@ TEST_CASE("Memcopy", "[mimmo]") {
 
   memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
-#pragma acc parallel deviceptr(test_array.dev_ptr)
+#pragma acc parallel copyin(test_array)                                        \
+    deviceptr(test_array.dev_ptr) default(none)
   {
 #pragma acc loop
     for (int i = 0; i < 5; i++)
@@ -177,7 +178,8 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
 
   memory_manager.update_array_host_to_device(test_array, 0, test_array.size);
 
-#pragma acc parallel deviceptr(test_array.dev_ptr) default(none)
+#pragma acc parallel copyin(test_array)                                        \
+    deviceptr(test_array.dev_ptr) default(none)
   {
 #pragma acc loop
     for (int i = 0; i < 5; i++)
