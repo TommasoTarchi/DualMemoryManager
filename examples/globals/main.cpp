@@ -37,8 +37,12 @@ int main() {
 #pragma acc loop
     for (int i = 0; i < global_array.size; i++)
       MIMMO_GET_PTR(global_array)[i] *= MIMMO_GET_VALUE(global_scalar);
+  }
 
-    MIMMO_GET_VALUE(global_scalar) += 5;
+#pragma acc serial MIMMO_PRESENT(global_scalar) default(none)
+  {
+    for (int i = 0; i < 1; i++)
+      MIMMO_GET_VALUE(global_scalar) += 5;
   }
 
   /* copy data back to host */
