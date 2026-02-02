@@ -16,8 +16,8 @@ int main() {
   global_array_size = 10;
 
   /* allocate memory for global array */
-  global_array =
-      memory_manager.alloc_array<int>("global_array", global_array_size, true);
+  memory_manager.alloc_array(global_array, "global_array", global_array_size,
+                             true);
 
   /* initialize array on host */
   for (int i = 0; i < global_array_size; i++)
@@ -28,7 +28,7 @@ int main() {
                                              global_array.size);
 
   /* create scalar */
-  global_scalar = memory_manager.create_scalar<int>("global_scalar", 10, true);
+  memory_manager.create_scalar(global_scalar, "global_scalar", 10, true);
 
   /* perform calculation on device */
 #pragma acc parallel MIMMO_PRESENT(global_array)                               \

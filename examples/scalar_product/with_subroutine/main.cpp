@@ -33,12 +33,12 @@ int main() {
   MiMMO::DualMemoryManager dual_memory_manager = MiMMO::DualMemoryManager();
 
   /* instantiate dual arrays */
-  MiMMO::DualArray<int> dual_array_1 =
-      dual_memory_manager.alloc_array<int>("dual_array_1", DIM, true);
-  MiMMO::DualArray<int> dual_array_2 =
-      dual_memory_manager.alloc_array<int>("dual_array_2", DIM, true);
-  MiMMO::DualArray<int> dual_array_res =
-      dual_memory_manager.alloc_array<int>("dual_array_res", DIM, true);
+  MiMMO::DualArray<int> dual_array_1;
+  dual_memory_manager.alloc_array(dual_array_1, "dual_array_1", DIM, true);
+  MiMMO::DualArray<int> dual_array_2;
+  dual_memory_manager.alloc_array(dual_array_2, "dual_array_2", DIM, true);
+  MiMMO::DualArray<int> dual_array_res;
+  dual_memory_manager.alloc_array(dual_array_res, "dual_array_res", DIM, true);
 
   /* print memory usage report */
   dual_memory_manager.report_memory_usage();

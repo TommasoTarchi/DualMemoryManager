@@ -45,8 +45,8 @@ void DualMemoryManager::report_memory_usage() {
   /* set width of columns */
   size_t label_col_width = label_header.length();
 
-  for (const auto &[label, element] : memory_tracker)
-    label_col_width = std::max(label_col_width, label.length());
+  for (const auto &[object, tuple] : memory_tracker)
+    label_col_width = std::max(label_col_width, std::get<0>(tuple).length());
 
   label_col_width += 4;
 
@@ -73,10 +73,10 @@ void DualMemoryManager::report_memory_usage() {
   std::cout << small_separator;
 
   /* print tracker's content */
-  for (const auto &[label, element] : memory_tracker) {
-    const std::string on_device = element.second ? "yes" : "no";
-    std::cout << std::left << std::setw(label_col_width) << label
-              << std::setw(size_col_width) << element.first
+  for (const auto &[object, tuple] : memory_tracker) {
+    const std::string on_device = std::get<2>(tuple) ? "yes" : "no";
+    std::cout << std::left << std::setw(label_col_width) << std::get<0>(tuple)
+              << std::setw(size_col_width) << std::get<1>(tuple)
               << std::setw(on_device_col_width) << on_device << "\n";
   }
   std::cout << big_separator;

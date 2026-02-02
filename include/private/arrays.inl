@@ -16,23 +16,18 @@ namespace MiMMO {
  * for a certain array. It returns an object of type DualArray,
  * containing host and device pointers.
  *
- * @tparam T        Type of elements in array to be allocated.
- *
- * @param label     Label that should be used to track the array in
- *                  memory.
- * @param size      Number of elements in the array.
- * @param on_device Whether the array should be allocated on device as
- *                  well (ignored if main code compiled without OpenACC
- *                  support).
- *
- * @return          Allocated array in the form of an object of type
- *                  DualArray.
+ * @param dual_array Dual array to be allocated.
+ * @param label      Label that should be used to track the array in
+ *                   memory.
+ * @param size       Number of elements in the array.
+ * @param on_device  Whether the array should be allocated on device as
+ *                   well (ignored if main code compiled without OpenACC
+ *                   support).
  */
 template <typename T>
-DualArray<T> DualMemoryManager::alloc_array(const std::string label,
-                                            const size_t size,
-                                            const bool on_device) {
-  DualArray<T> dual_array;
+void DualMemoryManager::alloc_array(DualArray<T> &dual_array,
+                                    const std::string label, const size_t size,
+                                    const bool on_device) {
 
   /* allocate memory on host */
   dual_array.host_ptr = (T *)std::malloc(size * sizeof(T));
@@ -55,26 +50,25 @@ DualArray<T> DualMemoryManager::alloc_array(const std::string label,
   dual_array.dev_ptr = nullptr;
 #endif // _OPENACC
 
-  /* update array label */
-  dual_array.label = label;
-
   /* update number of elements and bytes */
   dual_array.size = size;
   dual_array.size_bytes = size * sizeof(T);
 
   /* update memory tracker */
 #ifdef _OPENACC
-  const bool ret = add_to_memory_tracker(memory_tracker, total_memory, label,
-                                         dual_array.size_bytes, on_device);
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, total_memory, (void *)&dual_array,
+                            label, dual_array.size_bytes, on_device);
 #else
-  const bool ret = add_to_memory_tracker(memory_tracker, total_memory, label,
-                                         dual_array.size_bytes, false);
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, total_memory, (void *)&dual_array,
+                            label, dual_array.size_bytes, false);
 #endif // _OPENACC
 
   if (ret)
-    abort_mimmo(label + " already exists. Please choose another label.");
+    abort_mimmo("Failed to track memory for dual array '" + label + "'.");
 
-  return dual_array;
+  return;
 }
 
 /**
@@ -97,12 +91,12 @@ void DualMemoryManager::update_array_host_to_device(DualArray<T> dual_array,
                                                     const size_t num_elements) {
   /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
-    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo("Host pointer of dual array is a null pointer.");
 
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_array.dev_ptr == nullptr)
-    abort_mimmo(dual_array.label + "'s device pointer is a null pointer.");
+    abort_mimmo("Device pointer of dual array is a null pointer.");
 
   /* copy data from host to device */
   acc_memcpy_to_device(dual_array.dev_ptr + offset,
@@ -132,12 +126,12 @@ void DualMemoryManager::update_array_device_to_host(DualArray<T> dual_array,
                                                     const size_t num_elements) {
   /* check that host pointer is initialized */
   if (dual_array.host_ptr == nullptr)
-    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo("Host pointer of dual array is a null pointer.");
 
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_array.dev_ptr == nullptr)
-    abort_mimmo(dual_array.label + "'s device pointer is a null pointer.");
+    abort_mimmo("Device pointer of dual array  is a null pointer.");
 
   /* copy data from device to host */
   acc_memcpy_from_device(dual_array.host_ptr + offset,
@@ -162,16 +156,16 @@ template <typename T>
 void DualMemoryManager::free_array(DualArray<T> &dual_array) {
   /* check that host pointer is not null */
   if (dual_array.host_ptr == nullptr) {
-    abort_mimmo(dual_array.label + "'s host pointer is a null pointer.");
+    abort_mimmo("Host pointer of dual array is a null pointer.");
   }
 
   /* check that array was actually recorded and update memory
    * tracker
    * */
   const bool ret = remove_from_memory_tracker(memory_tracker, total_memory,
-                                              dual_array.label);
+                                              (void *)&dual_array);
   if (ret) {
-    abort_mimmo(dual_array.label + " was not found by memory manager.");
+    abort_mimmo("Dual array was not found by memory manager.");
   }
 
   /* free memory on host */

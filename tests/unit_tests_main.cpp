@@ -24,19 +24,20 @@ TEST_CASE("Memory manager - base types", "[mimmo]") {
   const size_t first_size = 10 * sizeof(int);
   const size_t second_size = 20 * sizeof(float);
 
-  MiMMO::DualArray<int> first_test_array =
-      memory_manager.alloc_array<int>("first_test_array", 10, true);
-  MiMMO::DualScalar<int> first_test_scalar =
-      memory_manager.create_scalar<int>("first_test_scalar", 3.14f, true);
+  MiMMO::DualArray<int> first_test_array;
+  memory_manager.alloc_array(first_test_array, "first_test_array", 10, true);
+  MiMMO::DualScalar<int> first_test_scalar;
+  memory_manager.create_scalar(first_test_scalar, "first_test_scalar", 3, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
       memory_manager.return_total_memory_usage();
 
-  MiMMO::DualArray<float> second_test_array =
-      memory_manager.alloc_array<float>("second_test_array", 20, false);
-  MiMMO::DualScalar<float> second_test_scalar =
-      memory_manager.create_scalar<float>("second_test_scalar", 3.14f, false);
+  MiMMO::DualArray<float> second_test_array;
+  memory_manager.alloc_array(second_test_array, "second_test_array", 20, false);
+  MiMMO::DualScalar<float> second_test_scalar;
+  memory_manager.create_scalar(second_test_scalar, "second_test_scalar", 3.14f,
+                               false);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_2 =
@@ -85,10 +86,10 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
 
   const size_t size = 10 * sizeof(test_struct);
 
-  MiMMO::DualArray<test_struct> test_array =
-      memory_manager.alloc_array<test_struct>("test_array", 10, true);
-  MiMMO::DualScalar<test_struct> test_scalar =
-      memory_manager.create_scalar<test_struct>("test_scalar", {1.0, 2}, true);
+  MiMMO::DualArray<test_struct> test_array;
+  memory_manager.alloc_array(test_array, "test_array", 10, true);
+  MiMMO::DualScalar<test_struct> test_scalar;
+  memory_manager.create_scalar(test_scalar, "test_scalar", {1.0, 2}, true);
 
   memory_manager.report_memory_usage();
   const std::pair<size_t, size_t> tot_mem_usage_1 =
@@ -127,10 +128,10 @@ TEST_CASE("Memory manager - struct", "[mimmo]") {
 TEST_CASE("Memcopy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualArray<int> test_array =
-      memory_manager.alloc_array<int>("test_array", 5, true);
-  MiMMO::DualArray<int> test_array_copy =
-      memory_manager.alloc_array<int>("test_array_copy", 5, true);
+  MiMMO::DualArray<int> test_array;
+  memory_manager.alloc_array(test_array, "test_array", 5, true);
+  MiMMO::DualArray<int> test_array_copy;
+  memory_manager.alloc_array(test_array_copy, "test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
@@ -164,10 +165,10 @@ TEST_CASE("Memcopy", "[mimmo]") {
 TEST_CASE("Memcopy - partial copy", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualArray<int> test_array =
-      memory_manager.alloc_array<int>("test_array", 5, true);
-  MiMMO::DualArray<int> test_array_copy =
-      memory_manager.alloc_array<int>("test_array_copy", 5, true);
+  MiMMO::DualArray<int> test_array;
+  memory_manager.alloc_array(test_array, "test_array", 5, true);
+  MiMMO::DualArray<int> test_array_copy;
+  memory_manager.alloc_array(test_array_copy, "test_array_copy", 5, true);
 
   for (int i = 0; i < 5; i++) {
     test_array.host_ptr[i] = i;
@@ -209,8 +210,8 @@ TEST_CASE("Memcopy - partial copy", "[mimmo]") {
 TEST_CASE("Scalar value update", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualScalar<int> test_scalar =
-      memory_manager.create_scalar<int>("test_scalar", 100, true);
+  MiMMO::DualScalar<int> test_scalar;
+  memory_manager.create_scalar(test_scalar, "test_scalar", 100, true);
 
   const int test_value_host_1 = test_scalar.host_value;
 #ifdef _OPENACC
@@ -252,8 +253,8 @@ TEST_CASE("Scalar value update", "[mimmo]") {
 TEST_CASE("Pointer selection macro", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualArray<int> test_array =
-      memory_manager.alloc_array<int>("test_array", 10, true);
+  MiMMO::DualArray<int> test_array;
+  memory_manager.alloc_array(test_array, "test_array", 10, true);
 
   const int *ref_ptr_dev = test_array.dev_ptr;
   const int *ref_ptr_host = test_array.host_ptr;
@@ -274,8 +275,8 @@ TEST_CASE("Pointer selection macro", "[mimmo]") {
 TEST_CASE("Value selection macro", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualScalar<int> test_scalar =
-      memory_manager.create_scalar<int>("test_scalar", 100, true);
+  MiMMO::DualScalar<int> test_scalar;
+  memory_manager.create_scalar(test_scalar, "test_scalar", 100, true);
 
   const int *ref_ptr_dev = test_scalar.dev_ptr;
   const int *ref_ptr_host = &test_scalar.host_value;
@@ -296,10 +297,10 @@ TEST_CASE("Value selection macro", "[mimmo]") {
 TEST_CASE("Present macro", "[mimmo]") {
   MiMMO::DualMemoryManager memory_manager = MiMMO::DualMemoryManager();
 
-  MiMMO::DualArray<int> test_array =
-      memory_manager.alloc_array<int>("test_array", 5, true);
-  MiMMO::DualScalar<int> test_scalar =
-      memory_manager.create_scalar<int>("test_scalar", 10, true);
+  MiMMO::DualArray<int> test_array;
+  memory_manager.alloc_array(test_array, "test_array", 5, true);
+  MiMMO::DualScalar<int> test_scalar;
+  memory_manager.create_scalar(test_scalar, "test_scalar", 10, true);
 
   for (int i = 0; i < 5; i++)
     test_array.host_ptr[i] = i;
@@ -322,7 +323,6 @@ TEST_CASE("Present macro", "[mimmo]") {
   test_scalar.host_value += 5;
 
   memory_manager.update_array_device_to_host(test_array, 0, test_array.size);
-
   memory_manager.update_scalar_device_to_host(test_scalar);
 
 #ifdef _OPENACC

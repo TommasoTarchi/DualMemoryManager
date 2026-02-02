@@ -24,6 +24,7 @@ namespace MiMMO {
  * @param memory_tracker   Memory tracker to update.
  * @param tot_memory_usage Pair containing total host and device memory
  *                         usage.
+ * @param object           Pointer to dual object to be removed.
  * @param label            Label of the array to be added.
  * @param size             Size in bytes of the array to be added.
  * @param on_device        Whether the array is allocated on device.
@@ -32,9 +33,9 @@ namespace MiMMO {
  *                         otherwise.
  */
 bool add_to_memory_tracker(
-    std::map<std::string, std::pair<size_t, bool>> &memory_tracker,
-    std::pair<size_t, size_t> &tot_memory_usage, const std::string label,
-    const size_t size, const bool on_device = false);
+    std::map<void *, std::tuple<std::string, size_t, bool>> &memory_tracker,
+    std::pair<size_t, size_t> &tot_memory_usage, void *const object,
+    const std::string label, const size_t size, const bool on_device);
 
 /**
  * @brief Removes an entry from the given memory tracker.
@@ -49,13 +50,13 @@ bool add_to_memory_tracker(
  * @param memory_tracker   Memory tracker to update.
  * @param tot_memory_usage Pair containing total host and device memory
  *                         usage.
- * @param label            Label of the array to be added.
+ * @param object           Pointer to dual object to be removed.
  *
  * @return                 'true' if the array was not tracked, 'false'
  *                         otherwise.
  */
 bool remove_from_memory_tracker(
-    std::map<std::string, std::pair<size_t, bool>> &memory_tracker,
-    std::pair<size_t, size_t> &tot_memory_usage, const std::string label);
+    std::map<void *, std::tuple<std::string, size_t, bool>> &memory_tracker,
+    std::pair<size_t, size_t> &tot_memory_usage, void *const object);
 
 } // namespace MiMMO

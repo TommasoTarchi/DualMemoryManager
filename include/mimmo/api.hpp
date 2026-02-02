@@ -28,7 +28,6 @@ namespace MiMMO {
 template <typename T> struct DualArray {
   T *host_ptr;       /*!< pointer to host memory */
   T *dev_ptr;        /*!< pointer to device memory */
-  std::string label; /*!< label for memory tracker */
   size_t size;       /*!< number of elements in the array */
   size_t size_bytes; /*!< size in bytes of the array */
 };
@@ -43,9 +42,8 @@ template <typename T> struct DualArray {
  * @tparam T Type of scalar variable.
  */
 template <typename T> struct DualScalar {
-  T host_value;      /*!< value on host */
-  T *dev_ptr;        /*!< pointer to value on device */
-  std::string label; /*!< label for memory tracker */
+  T host_value; /*!< value on host */
+  T *dev_ptr;   /*!< pointer to value on device */
 };
 
 /**
@@ -62,8 +60,8 @@ class DualMemoryManager {
 private:
   std::pair<size_t, size_t> total_memory; /*!< total used memory on host
                                                and device */
-  std::map<std::string, std::pair<size_t, bool>> memory_tracker; /*!< memory
-                                                        tracker for reports */
+  std::map<void *, std::tuple<std::string, size_t, bool>>
+      memory_tracker; /*!< memory tracker for reports */
 
 public:
   /**
@@ -79,21 +77,17 @@ public:
    * for a certain array. It returns an object of type DualArray,
    * containing host and device pointers.
    *
-   * @tparam T        Type of elements in array to be allocated.
-   *
-   * @param label     Label that should be used to track the array in
-   *                  memory.
-   * @param size      Number of elements in the array.
-   * @param on_device Whether the array should be allocated on device as
-   *                  well (ignored if main code compiled without OpenACC
-   *                  support).
-   *
-   * @return          Allocated array in the form of an object of type
-   *                  DualArray.
+   * @param dual_array Dual array to be allocated.
+   * @param label      Label that should be used to track the array in
+   *                   memory.
+   * @param size       Number of elements in the array.
+   * @param on_device  Whether the array should be allocated on device as
+   *                   well (ignored if main code compiled without OpenACC
+   *                   support).
    */
   template <typename T>
-  DualArray<T> alloc_array(const std::string label, const size_t size,
-                           const bool on_device = false);
+  void alloc_array(DualArray<T> &dual_array, const std::string label,
+                   const size_t size, const bool on_device = false);
 
   /**
    * @brief Copies data from host to device.
@@ -153,21 +147,17 @@ public:
    * value. It returns an object of type DualScalar that contains the host
    * value and the device pointer.
    *
-   * @tparam T        Type of element of variable to be created.
-   *
-   * @param label     Label that should be used to track the scalar in
-   *                  memory.
-   * @param value     Value to which the scalar should be initialized.
-   * @param on_device Whether the scalar should be created on device as
-   *                  well (ignored if main code compiled without OpenACC
-   *                  support).
-   *
-   * @return          Created variable in the form of an object of type
-   *                  DualScalar.
+   * @param dual_scalar Dual scalar to be created.
+   * @param label       Label that should be used to track the scalar in
+   *                    memory.
+   * @param value       Value to which the scalar should be initialized.
+   * @param on_device   Whether the scalar should be created on device as
+   *                    well (ignored if main code compiled without OpenACC
+   *                    support).
    */
   template <typename T>
-  DualScalar<T> create_scalar(const std::string label, const T value,
-                              const bool on_device = false);
+  void create_scalar(DualScalar<T> &dual_scalar, const std::string label,
+                     const T value, const bool on_device = false);
 
   /**
    * @brief Updates the value of a dual scalar from host to device.

@@ -17,23 +17,18 @@ namespace MiMMO {
  * value. It returns an object of type DualScalar that contains the host
  * value and the device pointer.
  *
- * @tparam T        Type of element of variable to be created.
- *
- * @param label     Label that should be used to track the scalar in
- *                  memory.
- * @param value     Value to which the scalar should be initialized.
- * @param on_device Whether the scalar should be created on device as
- *                  well (ignored if main code compiled without OpenACC
- *                  support).
- *
- * @return          Created variable in the form of an object of type
- *                  DualScalar.
+ * @param dual_scalar Dual scalar to be created.
+ * @param label       Label that should be used to track the scalar in
+ *                    memory.
+ * @param value       Value to which the scalar should be initialized.
+ * @param on_device   Whether the scalar should be created on device as
+ *                    well (ignored if main code compiled without OpenACC
+ *                    support).
  */
 template <typename T>
-DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
-                                               const T value,
-                                               const bool on_device) {
-  DualScalar<T> dual_scalar;
+void DualMemoryManager::create_scalar(DualScalar<T> &dual_scalar,
+                                      const std::string label, const T value,
+                                      const bool on_device) {
 
   /* define value on host */
   dual_scalar.host_value = value;
@@ -61,22 +56,21 @@ DualScalar<T> DualMemoryManager::create_scalar(const std::string label,
                          sizeof(T));
 #endif // _OPENACC
 
-  /* update scalar label */
-  dual_scalar.label = label;
-
   /* update memory tracker */
 #ifdef _OPENACC
-  const bool ret = add_to_memory_tracker(memory_tracker, total_memory, label,
-                                         sizeof(T), on_device);
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, total_memory, (void *)&dual_scalar,
+                            label, sizeof(T), on_device);
 #else
-  const bool ret = add_to_memory_tracker(memory_tracker, total_memory, label,
-                                         sizeof(T), false);
+  const bool ret =
+      add_to_memory_tracker(memory_tracker, total_memory, (void *)&dual_scalar,
+                            label, sizeof(T), false);
 #endif // _OPENACC
 
   if (ret)
-    abort_mimmo(label + " already exists. Please choose another label.");
+    abort_mimmo("Failed to track memory for dual scalar '" + label + "'.");
 
-  return dual_scalar;
+  return;
 }
 
 /**
@@ -99,10 +93,10 @@ void DualMemoryManager::update_scalar_host_to_device(
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_scalar.dev_ptr == nullptr)
-    abort_mimmo(dual_scalar.label + "'s device pointer is a null pointer.");
+    abort_mimmo("Device pointer of dual scalar is a null pointer.");
 
   /* copy data from host to device */
-  acc_memcpy_to_device(dual_scalar.dev_ptr, &dual_scalar.host_value, sizeof(T));
+  acc_memcpy_to_device(dual_scalar.dev_ptr, (void *)&dual_scalar, sizeof(T));
 #endif // _OPENACC
 
   return;
@@ -130,7 +124,7 @@ void DualMemoryManager::update_scalar_device_to_host(
 #ifdef _OPENACC
   /* check that device pointer is initialized */
   if (dual_scalar.dev_ptr == nullptr)
-    abort_mimmo(dual_scalar.label + "'s device pointer is a null pointer.");
+    abort_mimmo("Device pointer of dual scalar is a null pointer.");
 
   /* copy data from host to device */
   acc_memcpy_from_device(&dual_scalar.host_value, dual_scalar.dev_ptr,
@@ -161,9 +155,9 @@ void DualMemoryManager::destroy_scalar(DualScalar<T> &dual_scalar) {
    * tracker
    * */
   const bool ret = remove_from_memory_tracker(memory_tracker, total_memory,
-                                              dual_scalar.label);
+                                              (void *)&dual_scalar);
   if (ret) {
-    abort_mimmo(dual_scalar.label + " was not found by memory manager.");
+    abort_mimmo("Dual scalar was not found by memory manager.");
   }
 
   /* free memory on device */
